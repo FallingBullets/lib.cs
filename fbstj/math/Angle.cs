@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 namespace fbstj.math
 {
+    public delegate double TrigFn(double angle);
+
     public struct Angle
     {
         #region static
@@ -65,6 +67,8 @@ namespace fbstj.math
         public Angle(double value, Unit unit) : this() { _value = value; _unit = unit; }
 
         public double this[Unit unit] { get { return _value * Ratio(_unit, unit); } }
+
+        public double this[TrigFn fn] { get { return fn(this[Unit.RADIANS]); } }
 
         public double Normalised(Unit unit, bool aroundZero)
         {
