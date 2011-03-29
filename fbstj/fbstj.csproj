@@ -28,6 +28,7 @@
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
   <ItemGroup>
     <Compile Include="INI.cs" />
+    <Compile Include="math\Angle.cs" />
     <Compile Include="math\Pow.cs">
       <SubType>Code</SubType>
     </Compile>
