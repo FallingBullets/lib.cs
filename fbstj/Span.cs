@@ -3,63 +3,80 @@ using System.Collections.Generic;
 
 namespace fbstj
 {
-    public struct Span<T> : ISpan<T>, IContainer<T>, IEquatable<Span<T>>
+    public struct Span<T> : IEquatable<Span<T>>
         where T : IComparable<T>
     {
         #region static
+        /// <summary>Finds the intersection between two Spans</summary>
         public static Span<T> Intersect(Span<T> a, Span<T> b)
         {
-            Span<T> r = default(Span<T>);
             if (a.Equals(b)) return a;
-            if (!a.Intersects(b)) return r;
+            if (!a.Intersects(b)) return default(Span<T>);
             if (a.Contains(b)) return b;
             if (b.Contains(a)) return a;
+            return new Span<T>(Max(a.Minimum, b.Minimum), Min(a.Maximum, b.Maximum));
+        }
 
-            r.Minimum = a.Minimum.CompareTo(b.Minimum) > 0 ? a.Minimum : b.Minimum;
-            r.Maximum = a.Maximum.CompareTo(b.Maximum) > 0 ? a.Maximum : b.Maximum;
+        /// <summary>Finds the union (if any) between two Spans</summary>
+        public static Span<T> Union(Span<T> a, Span<T> b)
+        {
+            if (!a.Intersects(b))
+                return default(Span<T>);
+            return new Span<T>(Min(a.Minimum, b.Minimum), Max(a.Maximum, b.Maximum));
+        }
 
-            return r;
+        /// <summary>A helper method for finding the maximum value</summary>
+        public static T Max(params T[] args)
+        {
+            T max = args[0];
+            foreach (T t in args)
+                if (max.CompareTo(t) < 0)
+                    max = t;
+            return max;
+        }
+        /// <summary>A helper method for finding the minimum value</summary>
+        public static T Min(params T[] args)
+        {
+            T min = args[0];
+            foreach (T t in args)
+                if (min.CompareTo(t) > 0)
+                    min = t;
+            return min;
         }
         #endregion
 
         #region state
-        public T Minimum { get; private set; }
-        public T Maximum { get; private set; }
+        /// <summary>The smallest value (inclusive) that exist in this span</summary>
+        public readonly T Minimum;
+        /// <summary>The largest value (inclusive) that exist in this span</summary>
+        public readonly T Maximum;
 
-        public Span(T a, T b) : this()
+        public Span(T a, T b)
+            : this()
         {
-            if (a.CompareTo(b) == 0)
-                Maximum = Minimum = a;
-            else if (a.CompareTo(b) < 0) { Minimum = a; Maximum = b; }
-            else { Maximum = a; Maximum = b; }
+            Maximum = Max(a, b);
+            Minimum = Min(a, b);
         }
         #endregion
 
         #region tests
+        /// <summary>The span contains no points between its maximum and minimum values</summary>
         public bool Empty { get { return Maximum.CompareTo(Minimum) == Minimum.CompareTo(Maximum); } }
+        /// <summary>Finds if the passed value lies between the maximum and minimum values</summary>
         public bool Contains(T t) { return Maximum.CompareTo(t) >= 0 && Minimum.CompareTo(t) <= 0; }
+        /// <summary>Finds if the passed span lies between the maximum and minimum values</summary>
         public bool Contains(Span<T> sp) { return Contains(sp.Minimum) && Contains(sp.Maximum); }
+        /// <summary>Finds if there is overlap between this and the passed spans</summary>
         public bool Intersects(Span<T> s) { return s.Contains(this) || Contains(s.Maximum) || Contains(s.Minimum); }
-        public bool Equals(Span<T> other) { return Contains(other) && other.Contains(this); }
+        /// <summary>Finds if the passed span and this one have equal maximum and minimums</summary>
+        bool IEquatable<Span<T>>.Equals(Span<T> other) { return Contains(other) && other.Contains(this); }
         #endregion
 
         #region overrides
         public override bool Equals(object obj) { return Equals((Span<T>)obj); }
         public override int GetHashCode() { return base.GetHashCode(); }
+        /// <summary>Returns the mathematical representation of the span</summary>
         public override string ToString() { return "[" + Minimum + ".." + Maximum + "]"; }
         #endregion
-    }
-
-    /// <summary>
-    /// A interval between two 'values'
-    /// </summary>
-    /// <typeparam name="T">The orderable value type of the interval.</typeparam>
-    interface ISpan<T>
-        where T : IComparable<T>
-    {
-        /// <summary>The 'smaller' of the 'points'</summary>
-        T Minimum { get; }
-        /// <summary>The 'larger' of the 'points'</summary>
-        T Maximum { get; }
     }
 }

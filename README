@@ -1,4 +1,4 @@
-Span.cs is an interval logic class (you can quite happily remove the interfaces if you wish).
+Span.cs is an interval logic class
 INI.cs wraps the .ini file reader/writer syscalls.
 
 LICENSE
