@@ -1,3 +1,5 @@
+INI.cs wraps the .ini file reader/writer syscalls.
+
 LICENSE
 
 These code snippets are released in the public domain. Take them, copy them, alter them, etc.
