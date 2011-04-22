@@ -15,7 +15,7 @@ namespace fbstj
         /// <summary>Finds the intersection between two overlapping span</summary>
         public static Span<T> Intersect(Span<T> a, Span<T> b)
         {
-            if (!a.Intersects(b))
+            if (!a.Valid || !b.Valid || !a.Intersects(b))
                 return default(Span<T>);
 
             if (a.Contains(b)) return b;
@@ -27,7 +27,7 @@ namespace fbstj
         /// <summary>Finds the union of two overlapping spans</summary>
         public static Span<T> Union(Span<T> a, Span<T> b)
         {
-            if (!a.Intersects(b))
+            if (!a.Valid || !b.Valid || !a.Intersects(b))
                 return default(Span<T>);
 
             return new Span<T>(Max(a.Maximum, b.Maximum), Min(a.Minimum, b.Minimum));
@@ -62,18 +62,21 @@ namespace fbstj
         public T Maximum;
 
         public Span(params T[] points) { Maximum = Max(points); Minimum = Min(points); }
-        #endregion
 
-        #region methods
         /// <summary>There are no points between this one and the previous</summary>
         public bool Empty { get { return Maximum.CompareTo(Minimum) == Minimum.CompareTo(Maximum); } }
 
+        /// <summary>The Minimum is less than the Maximum</summary>
+        public bool Valid { get { return Maximum.CompareTo(Minimum) > Minimum.CompareTo(Maximum); } }
+        #endregion
+
+        #region methods
         /// <summary>Tests for point containment</summary>
-        public bool Contains(T item) { return Maximum.CompareTo(item) >= 0 && Minimum.CompareTo(item) <= 0; }
+        public bool Contains(T item) { if (!Valid) return false; return Maximum.CompareTo(item) >= 0 && Minimum.CompareTo(item) <= 0; }
 
         #region span tests
         /// <summary>Tests for span containment</summary>
-        public bool Contains(Span<T> sp) { return Contains(sp.Minimum) && Contains(sp.Maximum); }
+        public bool Contains(Span<T> sp) { if (!sp.Valid) return false; return Contains(sp.Minimum) && Contains(sp.Maximum); }
 
         /// <summary>Tests for span interesection</summary>
         public bool Intersects(Span<T> sp) { return sp.Contains(this) || Contains(sp.Minimum) || Contains(sp.Maximum); }

@@ -1,4 +1,5 @@
 INI.cs wraps the .ini file reader/writer syscalls.
+Span.cs contains a class which allows you to create spans/ranges/intervals over types with an IComparable<T> method
 
 LICENSE
 
