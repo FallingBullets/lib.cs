@@ -12,6 +12,27 @@ namespace fbstj
         where T : IComparable<T>
     {
         #region static
+        /// <summary>Finds the intersection between two overlapping span</summary>
+        public static Span<T> Intersect(Span<T> a, Span<T> b)
+        {
+            if (!a.Intersects(b))
+                return default(Span<T>);
+
+            if (a.Contains(b)) return b;
+            if (b.Contains(a)) return a;
+
+            return new Span<T>(Max(a.Minimum, b.Minimum), Min(a.Maximum, b.Maximum));
+        }
+
+        /// <summary>Finds the union of two overlapping spans</summary>
+        public static Span<T> Union(Span<T> a, Span<T> b)
+        {
+            if (!a.Intersects(b))
+                return default(Span<T>);
+
+            return new Span<T>(Max(a.Maximum, b.Maximum), Min(a.Minimum, b.Minimum));
+        }
+
         /// <summary>Finds the largest point in a selection</summary>
         public static T Max(params T[] points)
         {
