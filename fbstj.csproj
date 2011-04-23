@@ -42,7 +42,9 @@
   -->
   <ItemGroup>
     <Compile Include="INI.cs" />
+    <Compile Include="Period.cs" />
     <Compile Include="Period_T.cs" />
+    <Compile Include="Sector.cs" />
     <Compile Include="Span.cs" />
   </ItemGroup>
   <ItemGroup>
