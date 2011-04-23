@@ -1,5 +1,6 @@
 INI.cs wraps the .ini file reader/writer syscalls.
 Span.cs contains a class which allows you to create spans/ranges/intervals over types with an IComparable<T> method
+Period_T.cs contains a class which allows you to create periodic values, and normalize points to within the period
 
 LICENSE
 
