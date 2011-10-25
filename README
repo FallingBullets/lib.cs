@@ -1,8 +1,9 @@
-INI.cs wraps the .ini file reader/writer syscalls.
-Span.cs contains a class which allows you to create spans/ranges/intervals over types with an IComparable<T> method
-Period_T.cs contains a class which allows you to create periodic values, and normalize points to within the period
-Period.cs contains a non-generic version of Period<T> which works on doubles
-Sector.cs contains a class which allows you to create sectors of circles
+INI.cs wraps the .ini file reader/writer syscalls
+Span.cs allows you to create spans/ranges/intervals over types with an IComparable<T> method
+Period_T.cs allows you to create periodic values, and normalize points to within the period
+Period.cs is a non-generic version of Period<T> which works on doubles
+Sector.cs allows you to create sectors of circles
+Polynomial.cs allows you to create polynomials (with both positive and negative exponents) 
 
 LICENSE
 
