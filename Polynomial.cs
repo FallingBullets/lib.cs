@@ -12,6 +12,23 @@ namespace fbstj
 			public Term(int n, double co) { Exponent = n; Coefficient = co; }
 
 			public double Evaluate(double at) { return Coefficient * Math.Pow(at, Exponent); }
+			public override string ToString()
+			{
+				string x;
+				switch(Exponent)
+				{
+					case 0:
+						x = "";
+						break;
+					case 1:
+						x =  "x";
+						break;
+					default:
+						x = "x^" + Exponent;
+						break;
+				}
+				return (Coefficient == 1) ? ((Exponent == 0) ? "1" : x) : (Coefficient + x);
+			}
 		}
 
 		public static Polynomial operator +(Polynomial p, Polynomial q) { return Sum(p, q); }
@@ -76,7 +93,8 @@ namespace fbstj
 			_init();
 			var terms = new List<Term>();
 			foreach(var term in _co)
-				terms.Add(new Term(term.Key, term.Value));
+				if(term.Value != 0)
+					terms.Add(new Term(term.Key, term.Value));
 			return terms.GetEnumerator();
 		}
 
@@ -96,24 +114,7 @@ namespace fbstj
 		{
 			var terms = new List<string>();
 			foreach(var term in this)
-			{
-				string x;
-				if(term.Coefficient == 0)
-					continue;
-				switch(term.Exponent)
-				{
-					case 0:
-						x = "";
-						break;
-					case 1:
-						x =  "x";
-						break;
-					default:
-						x = "x^" + term.Exponent;
-						break;
-				}
-				terms.Add(term.Coefficient + x);
-			}
+				terms.Add(term.ToString());
 			return String.Join(" + ", terms.ToArray());
 		}
 	}
