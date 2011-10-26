@@ -8,11 +8,29 @@ namespace fbstj
 		public static Polynomial operator +(Polynomial p, Polynomial q)
 		{
 			var v = new Polynomial();
-			p._init(); q._init();
+			// add p's terms
+			p._init();
 			foreach(var x in p._co)
-				v[x.Key] = x.Value;
+				v[x.Key] += x.Value;
+			// add q's terms
+			q._init();
 			foreach(var y in q._co)
 				v[y.Key] += y.Value;
+			return v;
+		}
+
+		public static Polynomial operator *(double a, Polynomial p)
+		{
+			return new Polynomial(0, a) * p;
+		}
+
+		public static Polynomial operator *(Polynomial p, Polynomial q)
+		{
+			var v = new Polynomial();
+			p._init(); q._init();
+			foreach(var x in p._co)
+				foreach(var y in q._co)
+					v[x.Key + y.Key] += x.Value * y.Value;
 			return v;
 		}
 
