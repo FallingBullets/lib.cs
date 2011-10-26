@@ -5,32 +5,34 @@ namespace fbstj
 {
 	public struct Polynomial
 	{
-		public static Polynomial operator +(Polynomial p, Polynomial q)
+		public struct Term
+		{
+			public readonly double Coefficient;
+			public readonly int Exponent;
+			public Term(int n, double co) { Exponent = n; Coefficient = co; }
+
+			public double Evaluate(double at) { return Coefficient * Math.Pow(at, Exponent); }
+		}
+
+		public static Polynomial operator +(Polynomial p, Polynomial q) { return Sum(p, q); }
+
+		public static Polynomial Sum(params Polynomial[] args)
 		{
 			var v = new Polynomial();
-			// add p's terms
-			p._init();
-			foreach(var x in p._co)
-				v[x.Key] += x.Value;
-			// add q's terms
-			q._init();
-			foreach(var y in q._co)
-				v[y.Key] += y.Value;
+			foreach(var arg in args)
+				foreach(var term in arg)
+					v[term.Exponent] += term.Coefficient;
 			return v;
 		}
 
-		public static Polynomial operator *(double a, Polynomial p)
-		{
-			return new Polynomial(0, a) * p;
-		}
+		public static Polynomial operator *(double a, Polynomial p) { return new Polynomial(0, a) * p; }
 
 		public static Polynomial operator *(Polynomial p, Polynomial q)
 		{
 			var v = new Polynomial();
-			p._init(); q._init();
-			foreach(var x in p._co)
-				foreach(var y in q._co)
-					v[x.Key + y.Key] += x.Value * y.Value;
+			foreach(var x in p)
+				foreach(var y in q)
+					v[x.Exponent + y.Exponent] += x.Coefficient * y.Coefficient;
 			return v;
 		}
 
@@ -58,7 +60,7 @@ namespace fbstj
 
 		public double this[int i]
 		{
-			get { _init(); return _co.ContainsKey(i)?_co[i]:0; }
+			get { _init(); return _co.ContainsKey(i) ? _co[i] : 0; }
 			set
 			{
 				_init();
@@ -69,29 +71,36 @@ namespace fbstj
 			}
 		}
 
+		public IEnumerator<Term> GetEnumerator()
+		{
+			_init();
+			var terms = new List<Term>();
+			foreach(var term in _co)
+				terms.Add(new Term(term.Key, term.Value));
+			return terms.GetEnumerator();
+		}
+
 		/// <summary>
 		/// Evaluate the equation at a particular value of 'x'
 		/// </summary>
 		/// <param name="at">The value of 'x' to evaluate at</param>
 		public double Evaluate(double at)
 		{
-			_init();
 			double y = 0;
-			foreach(var term in _co)
-				y += Math.Pow(at, term.Key) * term.Value;
+			foreach(var term in this)
+				y += term.Evaluate(at);
 			return y;
 		}
 
 		public override string ToString()
 		{
-			_init();
 			var terms = new List<string>();
-			foreach(var term in _co)
+			foreach(var term in this)
 			{
 				string x;
-				if(term.Value == 0)
+				if(term.Coefficient == 0)
 					continue;
-				switch(term.Key)
+				switch(term.Exponent)
 				{
 					case 0:
 						x = "";
@@ -100,10 +109,10 @@ namespace fbstj
 						x =  "x";
 						break;
 					default:
-						x = "x^" + term.Key;
+						x = "x^" + term.Exponent;
 						break;
 				}
-				terms.Add(term.Value + x);
+				terms.Add(term.Coefficient + x);
 			}
 			return String.Join(" + ", terms.ToArray());
 		}
