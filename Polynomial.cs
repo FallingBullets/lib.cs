@@ -8,25 +8,19 @@ namespace fbstj
 		public struct Term
 		{
 			public readonly double Coefficient;
-			public readonly int Exponent;
-			public Term(int n, double co) { Exponent = n; Coefficient = co; }
+			public readonly double Exponent;
+			public Term(double n, double co) { Exponent = n; Coefficient = co; }
 
 			public double Evaluate(double at) { return Coefficient * Math.Pow(at, Exponent); }
 			public override string ToString()
 			{
 				string x;
-				switch(Exponent)
-				{
-					case 0:
-						x = "";
-						break;
-					case 1:
-						x =  "x";
-						break;
-					default:
-						x = "x^" + Exponent;
-						break;
-				}
+				if(Exponent == 0)
+					x = "";
+				else if(Exponent == 1)
+					x =  "x";
+				else
+					x = "x^" + Exponent;
 				return (Coefficient == 1) ? ((Exponent == 0) ? "1" : x) : (Coefficient + x);
 			}
 		}
@@ -61,9 +55,9 @@ namespace fbstj
 			return v;
 		}
 
-		private readonly Dictionary<int,double> _co = new Dictionary<int,double>();
+		private readonly Dictionary<double,double> _co = new Dictionary<double,double>();
 
-		public double this[int i]
+		public double this[double i]
 		{
 			get { return _co.ContainsKey(i) ? _co[i] : 0; }
 			set { if(_co.ContainsKey(i)) _co[i] = value; else _co.Add(i, value); }
