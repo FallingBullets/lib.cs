@@ -21,6 +21,17 @@ namespace fbstj
 			return b;
 		}
 
+		public static Box<T> Bounds(params Box<T>[] boxes)
+		{
+			Box<T> b = boxes[0];
+			foreach(var box in boxes)
+			{
+				b.X = new Span<T>(b.X.Maximum, box.X.Maximum, b.X.Minimum, box.X.Minimum);
+				b.Y = new Span<T>(b.Y.Maximum, box.Y.Maximum, b.Y.Minimum, box.Y.Minimum);
+			}
+			return b;
+		}
+
 		private Span<T> X, Y;
 
 		public bool Empty { get { return X.Empty && Y.Empty; } }
