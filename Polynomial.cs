@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace fbstj
 {
-	public struct Polynomial
+	public class Polynomial
 	{
 		public struct Term
 		{
@@ -42,7 +42,7 @@ namespace fbstj
 			return v;
 		}
 
-		public static Polynomial operator *(double a, Polynomial p) { return new Polynomial(0, a) * p; }
+		public static Polynomial operator *(double a, Polynomial p) { return Polynomial.From(a) * p; }
 
 		public static Polynomial operator *(Polynomial p, Polynomial q)
 		{
@@ -53,44 +53,24 @@ namespace fbstj
 			return v;
 		}
 
-		private Dictionary<int,double> _co;
-
-		private void _init() { if(_co == null) _co = new Dictionary<int,double>(); }
-
-		/// <summary>
-		/// Constructs a polynomial starting from a non-zero term
-		/// </summary>
-		/// <param name="start">The index of the first power of x in the polynomial</param>
-		/// <param name="coefficients">The coefficients a_i</param>
-		public Polynomial(int offset, params double[] coefficients)
+		public static Polynomial From(params double[] coefficients)
 		{
-			_co = new Dictionary<int,double>();
-			foreach(double co in coefficients)
-				this[offset++] = co;
+			var v = new Polynomial();
+			for(int i = 0; i < coefficients.Length; i++)
+				v[i] = coefficients[i];
+			return v;
 		}
 
-		/// <summary>
-		/// Constructs a polynomial a_0 + (a_1 * x) + (a_2 * x^2) + ... + (a_n * x^n)
-		/// </summary>
-		/// <param name="coefficients">The coefficients a_i</param>
-		public Polynomial(params double[] coefficients) : this(0, coefficients) {  }
+		private readonly Dictionary<int,double> _co = new Dictionary<int,double>();
 
 		public double this[int i]
 		{
-			get { _init(); return _co.ContainsKey(i) ? _co[i] : 0; }
-			set
-			{
-				_init();
-				if(_co.ContainsKey(i))
-					_co[i] = value;
-				else
-					_co.Add(i, value);
-			}
+			get { return _co.ContainsKey(i) ? _co[i] : 0; }
+			set { if(_co.ContainsKey(i)) _co[i] = value; else _co.Add(i, value); }
 		}
 
 		public IEnumerator<Term> GetEnumerator()
 		{
-			_init();
 			var terms = new List<Term>();
 			foreach(var term in _co)
 				if(term.Value != 0)
