@@ -41,10 +41,16 @@
   </Target>
   -->
   <ItemGroup>
+    <Compile Include="Box.cs" />
     <Compile Include="INI.cs" />
     <Compile Include="Period.cs" />
     <Compile Include="Period_T.cs" />
+    <Compile Include="Polynomial.cs" />
+    <Compile Include="PolyRing.cs" />
     <Compile Include="Sector.cs" />
+    <Compile Include="Serial\CAN.cs" />
+    <Compile Include="Serial\NMEA.cs" />
+    <Compile Include="Serial\Serial.cs" />
     <Compile Include="Span.cs" />
   </ItemGroup>
   <ItemGroup>
