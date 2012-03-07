@@ -50,6 +50,10 @@
     <Compile Include="Sector.cs" />
     <Compile Include="Serial\CAN.cs" />
     <Compile Include="Serial\NMEA.cs" />
+    <Compile Include="Serial\PCAN\PCAN.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Serial\PCAN\PCANBasic.cs" />
     <Compile Include="Serial\Serial.cs" />
     <Compile Include="Span.cs" />
   </ItemGroup>
