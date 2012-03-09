@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace fbstj.Serial
+namespace fbstj.IO
 {
 	public static class NMEA
 	{

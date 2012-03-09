@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace fbstj.Serial.CAN
+namespace fbstj.IO.CAN
 {
 	/// <summary>A timestamped receiver</summary>
 	public delegate void TimedReciever(TimeSpan at, Frame f);
 
 	/// <summary>A CAN port interface</summary>
-	public interface Port : Serial.Transport<Frame>
+	public interface Port : IO.Transport<Frame>
 	{
 		/// <summary>Distributes a recieved frame along with a TimeSpan timestamp</summary>
 		event TimedReciever TimedReceive;

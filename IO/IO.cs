@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace fbstj.Serial
+namespace fbstj.IO
 {
 	public delegate void Consumer<T>(T f);
 	public delegate T Converter<F, T>(F o);

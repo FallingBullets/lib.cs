@@ -4,7 +4,7 @@ using System.Threading;
 using Peak.Can.Basic;
 using System.Text;
 
-namespace fbstj.Serial.CAN
+namespace fbstj.IO.CAN
 {
 	/// <summary>
 	/// PCAN Port implementation
