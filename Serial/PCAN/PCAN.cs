@@ -1,29 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading;
-using Peak.PCAN;
+using Peak.Can.Basic;
 using System.Text;
 
-namespace fbstj.Serial.CAN.PEAK
+namespace fbstj.Serial.CAN
 {
-	public enum Ports
-	{
-		USB1 = PCANBasic.PCAN_USBBUS1,
-		USB2 = PCANBasic.PCAN_USBBUS2,
-		USB3 = PCANBasic.PCAN_USBBUS3,
-		USB4 = PCANBasic.PCAN_USBBUS4,
-		USB5 = PCANBasic.PCAN_USBBUS5,
-		USB6 = PCANBasic.PCAN_USBBUS6,
-		USB7 = PCANBasic.PCAN_USBBUS7,
-		USB8 = PCANBasic.PCAN_USBBUS8
-	}
-
 	/// <summary>
 	/// PCAN Port implementation
 	/// requires PCANBasic.cs and PCANBasic.dll
 	/// </summary>
-	public class Port : CAN.Port
+	public class PCAN : Port
 	{
+		public enum Ports
+		{
+			USB1 = PCANBasic.PCAN_USBBUS1,
+			USB2 = PCANBasic.PCAN_USBBUS2,
+			USB3 = PCANBasic.PCAN_USBBUS3,
+			USB4 = PCANBasic.PCAN_USBBUS4,
+			USB5 = PCANBasic.PCAN_USBBUS5,
+			USB6 = PCANBasic.PCAN_USBBUS6,
+			USB7 = PCANBasic.PCAN_USBBUS7,
+			USB8 = PCANBasic.PCAN_USBBUS8
+		}
+
 		#region PCAN type casting
 		/// <summary>Converts a TPCANMsg into a CAN.Frame</summary>
 		public static Frame Frame(TPCANMsg msg)
@@ -154,7 +154,7 @@ namespace fbstj.Serial.CAN.PEAK
 
 		private Ports iface;
 		private Thread rx;
-		public Port(Ports device, long baudrate)
+		public PCAN(Ports device, long baudrate)
 		{
 			baud = TPCANBaudrate.PCAN_BAUD_1M;
 			this.Receive = delegate(Frame f) { };
@@ -166,10 +166,10 @@ namespace fbstj.Serial.CAN.PEAK
 			rx.IsBackground = true;
 			rx.Start();
 		}
-		~Port() { PCANBasic.Uninitialize((byte)iface); }
+		~PCAN() { PCANBasic.Uninitialize((byte)iface); }
 
 		/// <summary>Distributes a recieved frame</summary>
-		public event Receiver<Frame> Receive;
+		public event Consumer<Frame> Receive;
 		/// <summary>Distributes a recieved frame along with a TimeSpan timestamp</summary>
 		public event TimedReciever TimedReceive;
 
@@ -178,6 +178,18 @@ namespace fbstj.Serial.CAN.PEAK
 		{
 			TPCANMsg msg = Frame(f);
 			PCANBasic.Write((byte)iface, ref msg);
+		}
+
+		public Frame SendRecieve(Frame f)
+		{
+			Frame r = default(Frame);
+			var x = new AutoResetEvent(false);
+			Consumer<Frame> cf = delegate(Frame _) { r = _; x.Set(); };
+			Receive += cf;
+			Send(f);
+			x.WaitOne();
+			Receive -= cf;
+			return r;
 		}
 
 		private void _read()
