@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace fbstj
 {
@@ -28,7 +27,7 @@ namespace fbstj
 			get { return _co[i]; }
 			set
 			{
-				if(_co.Count > i)
+				if (_co.Count > i)
 					_co[i] = value;
 				else
 					_co.Add(value);
@@ -41,7 +40,7 @@ namespace fbstj
 		public T Evaluate(T at, BinOp<T> add, BinOp<T> prod, PowOp<T> pow)
 		{
 			T y = default(T);
-			for(int i = 0; i < Degree; i++)
+			for (int i = 0; i < Degree; i++)
 				y = add(y, prod(this[i], pow(at, i)));
 			return y;
 		}

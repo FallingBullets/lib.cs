@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace fbstj.IO.CAN
 {
@@ -34,7 +33,7 @@ namespace fbstj.IO.CAN
 
 		public override string ToString()
 		{
-			return "ID="+ID.ToString("X")+",Data=";
+			return "ID=" + ID.ToString("X") + ",Data=";
 		}
 	}
 }

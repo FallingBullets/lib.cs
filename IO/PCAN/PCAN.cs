@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Threading;
 using Peak.Can.Basic;
-using System.Text;
 
 namespace fbstj.IO.CAN
 {

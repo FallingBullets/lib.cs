@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO.Ports;
+﻿using System.IO.Ports;
 
 namespace fbstj.IO
 {
@@ -28,7 +26,7 @@ namespace fbstj.IO
 		public byte SendRecieve(byte t)
 		{
 			Send(t);
-			return (byte) _port.ReadByte();
+			return (byte)_port.ReadByte();
 		}
 	}
 }

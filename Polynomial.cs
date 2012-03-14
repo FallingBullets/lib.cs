@@ -15,10 +15,10 @@ namespace fbstj
 			public override string ToString()
 			{
 				string x;
-				if(Exponent == 0)
+				if (Exponent == 0)
 					x = "";
-				else if(Exponent == 1)
-					x =  "x";
+				else if (Exponent == 1)
+					x = "x";
 				else
 					x = "x^" + Exponent;
 				return (Coefficient == 1) ? ((Exponent == 0) ? "1" : x) : (Coefficient + x);
@@ -30,8 +30,8 @@ namespace fbstj
 		public static Polynomial Sum(params Polynomial[] args)
 		{
 			var v = new Polynomial();
-			foreach(var arg in args)
-				foreach(var term in arg)
+			foreach (var arg in args)
+				foreach (var term in arg)
 					v[term.Exponent] += term.Coefficient;
 			return v;
 		}
@@ -41,8 +41,8 @@ namespace fbstj
 		public static Polynomial operator *(Polynomial p, Polynomial q)
 		{
 			var v = new Polynomial();
-			foreach(var x in p)
-				foreach(var y in q)
+			foreach (var x in p)
+				foreach (var y in q)
 					v[x.Exponent + y.Exponent] += x.Coefficient * y.Coefficient;
 			return v;
 		}
@@ -50,24 +50,24 @@ namespace fbstj
 		public static Polynomial From(params double[] coefficients)
 		{
 			var v = new Polynomial();
-			for(int i = 0; i < coefficients.Length; i++)
+			for (int i = 0; i < coefficients.Length; i++)
 				v[i] = coefficients[i];
 			return v;
 		}
 
-		private readonly Dictionary<double,double> _co = new Dictionary<double,double>();
+		private readonly Dictionary<double, double> _co = new Dictionary<double, double>();
 
 		public double this[double i]
 		{
 			get { return _co.ContainsKey(i) ? _co[i] : 0; }
-			set { if(_co.ContainsKey(i)) _co[i] = value; else _co.Add(i, value); }
+			set { if (_co.ContainsKey(i)) _co[i] = value; else _co.Add(i, value); }
 		}
 
 		public IEnumerator<Term> GetEnumerator()
 		{
 			var terms = new List<Term>();
-			foreach(var term in _co)
-				if(term.Value != 0)
+			foreach (var term in _co)
+				if (term.Value != 0)
 					terms.Add(new Term(term.Key, term.Value));
 			return terms.GetEnumerator();
 		}
@@ -79,7 +79,7 @@ namespace fbstj
 		public double Evaluate(double at)
 		{
 			double y = 0;
-			foreach(var term in this)
+			foreach (var term in this)
 				y += term.Evaluate(at);
 			return y;
 		}
@@ -87,7 +87,7 @@ namespace fbstj
 		public override string ToString()
 		{
 			var terms = new List<string>();
-			foreach(var term in this)
+			foreach (var term in this)
 				terms.Add(term.ToString());
 			return String.Join(" + ", terms.ToArray());
 		}
