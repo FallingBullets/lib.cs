@@ -169,7 +169,7 @@ namespace fbstj.IO.CAN
 		~PCAN() { PCANBasic.Uninitialize((byte)iface); }
 
 		/// <summary>Distributes a recieved frame</summary>
-		public event Consumer<Frame> Receive;
+		public event Action<Frame> Receive;
 		/// <summary>Distributes a recieved frame along with a TimeSpan timestamp</summary>
 		public event TimedReciever TimedReceive;
 
@@ -184,7 +184,7 @@ namespace fbstj.IO.CAN
 		{
 			Frame r = default(Frame);
 			var x = new AutoResetEvent(false);
-			Consumer<Frame> cf = delegate(Frame _) { r = _; x.Set(); };
+			Action<Frame> cf = delegate(Frame _) { r = _; x.Set(); };
 			Receive += cf;
 			Send(f);
 			x.WaitOne();

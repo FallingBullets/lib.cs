@@ -51,7 +51,7 @@ namespace fbstj.IO
 		}
 
 		/// <summary>Consume a serially received Packet</summary>
-		public static event Consumer<Packet> Recieve;
+		public static event Action<Packet> Recieve;
 
 		private static byte _rec_state;
 		private static string _rec_buf;

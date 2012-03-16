@@ -1,4 +1,5 @@
-﻿using System.IO.Ports;
+﻿using System;
+using System.IO.Ports;
 
 namespace fbstj.IO
 {
@@ -15,7 +16,7 @@ namespace fbstj.IO
 			};
 		}
 
-		public event Consumer<byte> Receive;
+		public event Action<byte> Receive;
 
 		public void Send(byte t)
 		{
