@@ -19,6 +19,7 @@ namespace Algebra
 			if (close) this.Close();
 		}
 
+		#region properties
 		/// <summary>For all x,y in S, x.y is in S</summary>
 		public bool Closed { get { return this.Closed(); } }
 
@@ -52,22 +53,40 @@ namespace Algebra
 				return LeftQuotient(dividend, divisor);
 			throw new ArgumentException("Only commutative groups have Quotient ");
 		}
+		#endregion
 
-		public IGroup<T> GenerateSubgroup(ISet<T> set)
+		#region interaction
+		/// <summary></summary>
+		public bool IsOvergroupOf(ISet<T> set)
 		{
-			var _ = new Magma<T>(set, Operation, true);
-			if(!_.Items.IsSubsetOf(Items))
+			var _ = new Magma<T>(set, Operation, false);
+			return _.Items.IsSubsetOf(Items) && _.ClosedOverInverses();
+		}
+
+		/// <summary></summary>
+		public IGroup<T> GenerateSubgroup(params T[] generators)
+		{
+			var _ = new Magma<T>(new SortedSet<T>(generators), Operation, true);
+			if(!IsOvergroupOf (_.Items))
 				throw new ArgumentException("Not a subset");
 			return new Group<T>(_);
 		}
 
-		public ISet<T> LeftCoset(ISet<T> set, T item)
+		/// <summary>Left coset of a subgroup</summary>
+		public ISet<T> LeftCoset(IGroup<T> subgroup, T item)
 		{
-			var _ = new Magma<T>(set, Operation);
-			if (!set.IsSubsetOf(Items))
-				throw new ArgumentException("Not a subset");
-
+			if (!IsOvergroupOf(subgroup))
+				throw new ArgumentException("Not a subgroup");
+			return new Magma<T>(subgroup, Operation).LeftMultiply(item);
 		}
+		/// <summary>Right coset of a subgroup</summary>
+		public ISet<T> RightCoset(IGroup<T> subgroup, T item)
+		{
+			if (!IsOvergroupOf(subgroup))
+				throw new ArgumentException("Not a subgroup");
+			return new Magma<T>(subgroup, Operation).RightMultiply(item);
+		}
+		#endregion
 	}
 
 	namespace Extensions
@@ -76,10 +95,15 @@ namespace Algebra
 		/// <remarks>Used to get around the lack of `this` in closures</remarks>
 		public static class MagmaExtensions
 		{
-
+			#region properties
 			public static bool Closed<T>(this Magma<T> _) where T : IEquatable<T>
 			{
 				return _.Items.All(a => _.Items.All(b => _.Items.Contains(_.Operation(a, b))));
+			}
+
+			public static bool ClosedOverInverses<T>(this Magma<T> _) where T:IEquatable<T>
+			{
+				return _.Items.All(a => _.Items.All(b => _.Items.Contains (_.Operation(a, _.Inverse (b)))));
 			}
 
 			public static bool Identity<T>(this Magma<T> _, T identity) where T : IEquatable<T>
@@ -121,21 +145,34 @@ namespace Algebra
 			{
 				return _.Items.All(a => _.Items.All(b => _.Operation.Commutes(a, b)));
 			}
+			#endregion
 
+			#region utility actions
 			/// <summary></summary>
 			public static void Close<T>(this Magma<T> _) where T : IEquatable<T>
 			{
 				while (!_.Closed)
 				{
 					var s = new SortedSet<T>(_.Items);
-					foreach (T i in s)
-						foreach (T j in s)
-						{
-							_.Items.Add(_.Operation(i, j));
-							_.Items.Add(_.Operation(j, i));
-						}
+					Func<ISet<T>,bool> U = delegate(ISet<T> set){ s.UnionWith (set); return true; };
+					s.All(item => U(_.LeftMultiply(item)) && U(_.RightMultiply(item)));
 				}
 			}
+
+			public static ISet<T> LeftMultiply<T>(this Magma<T> _, T by) where T : IEquatable<T>
+			{
+				var s = new SortedSet<T>();
+				_.Items.All(item => s.Add (_.Operation(by, item)));
+				return s;
+			}
+
+			public static ISet<T> RightMultiply<T>(this Magma<T> _, T by) where T : IEquatable<T>
+			{
+				var s = new SortedSet<T>();
+				_.Items.All(item => s.Add (_.Operation(item, by)));
+				return s;
+			}
+			#endregion
 		}
 	}
 

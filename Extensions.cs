@@ -106,6 +106,8 @@ namespace Algebra.Extensions
 	/// <summary>Properties of functions</summary>
 	public static class FunctionExtensions
 	{
+		#region *jections
+		/// <summary>This function is injective over from</summary>
 		public static bool Injection<From, To>(this Func<From, To> _, IEnumerable<From> from)
 		{
 			var results = new List<To>();
@@ -117,6 +119,7 @@ namespace Algebra.Extensions
 			return true;
 		}
 
+		/// <summary>This function is surjective between from and to</summary>
 		public static bool Surjection<From, To>(this Func<From, To> _, IEnumerable<From> from, IEnumerable<To> to)
 		{
 			var results = new List<To>(to);
@@ -125,37 +128,41 @@ namespace Algebra.Extensions
 			return results.Count == 0;
 		}
 
+		/// <summary>This function is bijective between from and to</summary>
 		public static bool Bijection<From, To>(this Func<From, To> _, IEnumerable<From> from, IEnumerable<To> to)
 		{
 			return _.Injection(from) && _.Surjection(from, to);
 		}
+		#endregion
 
-		public static Func<To, From> Inverse<From, To>(this Func<From, To> _, IEnumerable<From> from, IEnumerable<To> to)
+		#region inversion
+		/// <summary>Return a closure to generate a the inverse of _ over a given domain</summary>
+		public static Func<IEnumerable<From>, Func<To, From>> Inverse<From, To>(this Func<From, To> _)
 		{
-			if (_.Bijection(from, to))
-				throw new ArgumentException("Function not a bijection");
-			return delegate(To t)
-			{
-				foreach (From f in from)
-					if (t.Equals(_(f)))
-						return f;
-				throw new ArgumentException("Element not invertable");
-			};
+			return from => t => from.Single(f => t.Equals(_(f)));
 		}
+		#endregion
 	}
-
 	/// <summary>Properties of relations</summary>
 	public static class RelationExtensions
 	{
+		#region reflexive
 		/// <summary>Every element of on is related to itsself. _(a,a)</summary>
-		public static bool Reflexive<T>(this Func<T, T, bool> _, IEnumerable<T> on) { return on.All(t => _(t, t)); }
+		public static bool Reflexive<T>(this Func<T, T, bool> _, IEnumerable<T> on)
+		{
+			return on.All(t => _(t, t));
+		}
+		#endregion
 
+		#region symetric
 		/// <summary>_(a,b) iff _(b,a)</summary>
 		public static bool Symetric<T>(this Func<T, T, bool> _, IEnumerable<T> on)
 		{
 			return on.All(a => on.All(b => _(a, b) ? _(b, a) : !_(b, a)));
 		}
+		#endregion
 
+		#region transitive
 		/// <summary>a~b and b~c -> a~c</summary>
 		public static bool Transitive<T>(Func<T, T, bool> _, T a, T b, T c)
 		{
@@ -167,11 +174,67 @@ namespace Algebra.Extensions
 		{
 			return on.All(a => on.All(b => on.All(c => (_(a, b) & _(b, c)) ? _(a, c) : true)));
 		}
+		#endregion
 
+		#region Euclidean
 		/// <summary>_(a,b) & _(a,c) => _(b,c)</summary>
 		public static bool Euclidean<T>(this Func<T, T, bool> _, IEnumerable<T> on)
 		{
 			return on.All(a => on.All(b => on.All(c => ((_(a, b) & _(a, c)) ? _(b, c) : true))));
 		}
+		#endregion
+	}
+
+	/// <summary>Properties of Sets and functions over sets</summary>
+	public static class SetExtensions
+	{
+		#region Set logic
+		/// <summary>Generates the intersection of the passed sets</summary>
+		public static ISet<T> Intersection<T>(params ISet<T>[] sets)
+		{
+			var intersection = new SortedSet<T>(sets[0]);
+			foreach(ISet<T> set in sets)
+				intersection.IntersectWith(set);
+			return intersection;
+		}
+
+		/// <summary>Generates the union of the passed sets</summary>
+		public static ISet<T> Union<T>(params ISet<T>[] sets)
+		{
+			var union = new SortedSet<T>(sets[0]);
+			foreach(ISet<T> set in sets)
+				union.UnionWith(set);
+			return union;
+		}
+
+		/// <summary>The passed sets partition this set</summary>
+		public static bool Partitions<T>(this ISet<T> _, params ISet<T>[] sets)
+		{
+			return _.SetEquals(Union(sets))
+				&& sets.All(a => sets.All(b => a.SetEquals(b) ? true : Intersection(a,b).Count == 0));
+		}
+		#endregion
+
+		#region generators
+		/// <summary>Lazy set generation</summary>
+		private static ISet<T> Set<T>(params T[] items){ return new SortedSet<T>(items); }
+
+		/// <summary>Generates the powerset</summary>
+		public static ISet<ISet<T>> Powerset<T>(this ISet<T> _)
+		{
+			var power = new SortedSet<ISet<T>>();
+			_.All(item => power.Add(Set(item)));
+
+			for(int i = 1; i < _.Count; i++)
+			{
+				_.All(item => power.All(delegate(ISet<T> set){
+					var x = new SortedSet<T>(set);
+					x.Add(item);
+					return power.Add(x);
+				}));
+			}
+			return power;
+		}
+		#endregion
 	}
 }
