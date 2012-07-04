@@ -33,7 +33,10 @@ namespace fbstj.IO.CAN
 
 		public override string ToString()
 		{
-			return "ID=" + ID.ToString("X") + ",Data=";
+			string[] data = new string[Length];
+			for (int i = 0; i < Length; i++)
+				data[i] = this[i].ToString("X2");
+			return "ID=" + ID.ToString("X") + ",Data=" + string.Join(" ", data);
 		}
 	}
 }

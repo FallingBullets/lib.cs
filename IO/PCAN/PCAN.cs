@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using Peak.Can.Basic;
+using System.IO;
+using System.Text.RegularExpressions;
+using System.Globalization;
 
 namespace fbstj.IO.CAN
 {
@@ -237,6 +240,55 @@ namespace fbstj.IO.CAN
 				return string.Format("An error occurred. Error-code's text ({0:X}) couldn't be retrieved", error);
 			else
 				return strTemp.ToString();
+		}
+	}
+
+	public static class PCAN_View
+	{
+		public struct LogRecord
+		{
+			public uint ID;
+			public double Time;
+			public bool Received;
+			public Frame Frame;
+		}
+
+		/// <summary>
+		/// Implements a parsing method for PCAN-View log files
+		/// </summary>
+		public static LogRecord[] ParsePCAN(this StreamReader file)
+		{
+			string line;
+			var o = new List<LogRecord>();
+			while ((line = file.ReadLine()) != null)
+			{
+				try { o.Add(ParseLine(line)); } catch { }
+			}
+			return o.ToArray();
+		}
+
+		static readonly Regex record = new Regex(@"(\d+).\s+([\d.]+)\s+([RT]x)\s+([0-9A-Fa-f]+)\s+(\d)");
+		static readonly Regex data = new Regex(@" ([0-9a-fA-F]{2})");
+		private static LogRecord ParseLine(string line)
+		{
+			LogRecord o = default(LogRecord);
+			Frame f = default(Frame);
+			Match m = record.Match(line);
+			if (!m.Success)
+				throw new Exception("Line incorrectly formatted");
+			o.ID = uint.Parse(m.Groups[1].Value);
+			o.Time = double.Parse(m.Groups[2].Value);
+			o.Received = m.Groups[3].Value == "Rx";
+			f.ID = int.Parse(m.Groups[4].Value, NumberStyles.HexNumber);
+			f.Length = byte.Parse(m.Groups[5].Value);
+			o.Frame = f;
+			var ms = data.Matches(line);
+			int offset = ms.Count - f.Length;
+			if (offset < 0)
+				throw new Exception("not enough data segments for length");
+			for (int i = 0; i < f.Length; i++)
+				f[i] = byte.Parse(ms[offset + i].Groups[1].Value, NumberStyles.HexNumber);
+			return o;
 		}
 	}
 }
