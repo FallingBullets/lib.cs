@@ -1,6 +1,6 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual C# Express 2008
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual C# Express 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test", "Test\test.csproj", "{95D4A938-2FC6-4859-9777-DC955E3A17D6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "fbstj", "fbstj.csproj", "{7609102C-3EAF-495A-82AF-4F0D3C38FF18}"
