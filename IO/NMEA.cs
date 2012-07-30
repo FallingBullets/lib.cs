@@ -56,7 +56,7 @@ namespace fbstj.IO
 		private static byte _rec_state;
 		private static string _rec_buf;
 		/// <summary>NMEA serial state machine</summary>
-		public static void Receive_Char(byte b)
+		public static void ParseByte(byte b)
 		{
 			char ch = (char)b;
 			if (ch == '$')
