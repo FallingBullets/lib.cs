@@ -183,17 +183,18 @@ namespace fbstj.IO.CAN
 			PCANBasic.Write((byte)iface, ref msg);
 		}
 
-		public Frame SendRecieve(Frame f)
+		public Frame SendAndMatchReply(Frame f, Predicate<Frame> match)
 		{
 			Frame r = default(Frame);
 			var x = new AutoResetEvent(false);
-			Action<Frame> cf = delegate(Frame _) { r = _; x.Set(); };
+			Action<Frame> cf = (_) => { if (match(_)) { r = _; x.Set(); } };
 			Receive += cf;
 			Send(f);
 			x.WaitOne();
 			Receive -= cf;
 			return r;
 		}
+		public Frame SendRecieve(Frame f) { return SendAndMatchReply(f, (_) => true); }
 
 		private void _read()
 		{	// threaded recieve listener

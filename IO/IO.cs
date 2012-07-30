@@ -12,6 +12,8 @@ namespace fbstj.IO
 		void Send(T t);
 		/// <summary>Send a T and then wait for a reply</summary>
 		T SendRecieve(T t);
+		/// <summary>Send a T and then wait for a reply which matches the predicate passed</summary>
+		T SendAndMatchReply(T t, Predicate<T> filter);
 	}
 
 	/// <summary>A struct for attaching two disparate Transportats together</summary>

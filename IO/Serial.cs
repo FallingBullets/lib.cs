@@ -29,5 +29,14 @@ namespace fbstj.IO
 			Send(t);
 			return (byte)_port.ReadByte();
 		}
+
+		public byte SendAndMatchReply(byte t, Predicate<byte> match)
+		{
+			Send(t);
+			var b = (byte)_port.ReadByte();
+			while (!match(b))
+				b = (byte)_port.ReadByte();
+			return b;
+		}
 	}
 }
