@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 
 namespace fbstj.IO
 {
@@ -10,10 +11,21 @@ namespace fbstj.IO
 
 		/// <summary>Send a T</summary>
 		void Send(T t);
-		/// <summary>Send a T and then wait for a reply</summary>
-		T SendRecieve(T t);
-		/// <summary>Send a T and then wait for a reply which matches the predicate passed</summary>
-		T SendAndMatchReply(T t, Predicate<T> filter);
+	}
+
+	public static class TransportExtensions
+	{
+		public static T ActAndMatchReceipt<T>(this Transport<T> _, Action act, Func<T, bool> filter)
+		{
+			T rx = default(T);
+			var x = new AutoResetEvent(false);
+			Action<T> cf = (_rx) => { if (filter(_rx)) { rx = _rx; x.Set(); } };
+			_.Receive += cf;
+			act();
+			x.WaitOne();
+			_.Receive -= cf;
+			return rx;
+		}
 	}
 
 	/// <summary>A struct for attaching two disparate Transportats together</summary>

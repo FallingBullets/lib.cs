@@ -2,14 +2,11 @@
 
 namespace fbstj.IO.CAN
 {
-	/// <summary>A timestamped receiver</summary>
-	public delegate void TimedReciever(TimeSpan at, Frame f);
-
 	/// <summary>A CAN port interface</summary>
-	public interface Port : IO.Transport<Frame>
+	public interface Port : Transport<Frame>
 	{
 		/// <summary>Distributes a recieved frame along with a TimeSpan timestamp</summary>
-		event TimedReciever TimedReceive;
+		event Action<TimeSpan, Frame> TimedReceive;
 	}
 
 	/// <summary>A CAN frame</summary>

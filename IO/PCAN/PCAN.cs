@@ -65,9 +65,9 @@ namespace fbstj.IO.CAN
 
 		#region Port enumeration
 		/// <summary>Enmerate all ports, and their USB Device Number</summary>
-		public static Dictionary<Ports, byte> All()
+		public static List<Ports> All()
 		{
-			var all = new Dictionary<Ports, byte>();
+			var all = new List<Ports>();
 			uint fff = 0;
 			TPCANStatus status;
 			foreach (Ports d in Enum.GetValues(typeof(Ports)))
@@ -75,15 +75,20 @@ namespace fbstj.IO.CAN
 				PCANBasic.Initialize((byte)d, TPCANBaudrate.PCAN_BAUD_1M);
 				status = PCANBasic.GetValue((byte)d, TPCANParameter.PCAN_DEVICE_NUMBER, out fff, 1);
 				if (status != TPCANStatus.PCAN_ERROR_INITIALIZE)
-					all.Add(d, (byte)fff);
+					all.Add(d);
 				PCANBasic.Uninitialize((byte)d);
 			}
 			return all;
 		}
 		#endregion
 
+		public static explicit operator Ports(PCAN _) { return _.iface; }
+
+		private Ports iface;
+		private Thread rx;
+		private TPCANBaudrate baud = TPCANBaudrate.PCAN_BAUD_1M;
+
 		#region Bitrate
-		private TPCANBaudrate baud;
 		public long Bitrate
 		{
 			get
@@ -155,13 +160,8 @@ namespace fbstj.IO.CAN
 		}
 		#endregion
 
-		private Ports iface;
-		private Thread rx;
 		public PCAN(Ports device, long baudrate)
 		{
-			baud = TPCANBaudrate.PCAN_BAUD_1M;
-			this.Receive = delegate(Frame f) { };
-			this.TimedReceive = delegate(TimeSpan t, Frame f) { };
 			iface = device;
 			Bitrate = baudrate;
 			PCANBasic.Initialize((byte)iface, baud);
@@ -171,10 +171,8 @@ namespace fbstj.IO.CAN
 		}
 		~PCAN() { PCANBasic.Uninitialize((byte)iface); }
 
-		/// <summary>Distributes a recieved frame</summary>
-		public event Action<Frame> Receive;
-		/// <summary>Distributes a recieved frame along with a TimeSpan timestamp</summary>
-		public event TimedReciever TimedReceive;
+		public event Action<Frame> Receive = (f) => { };
+		public event Action<TimeSpan, Frame> TimedReceive = (t, f) => { };
 
 		/// <summary>Send a frame</summary>
 		public void Send(Frame f)
@@ -182,19 +180,6 @@ namespace fbstj.IO.CAN
 			TPCANMsg msg = Frame(f);
 			PCANBasic.Write((byte)iface, ref msg);
 		}
-
-		public Frame SendAndMatchReply(Frame f, Predicate<Frame> match)
-		{
-			Frame r = default(Frame);
-			var x = new AutoResetEvent(false);
-			Action<Frame> cf = (_) => { if (match(_)) { r = _; x.Set(); } };
-			Receive += cf;
-			Send(f);
-			x.WaitOne();
-			Receive -= cf;
-			return r;
-		}
-		public Frame SendRecieve(Frame f) { return SendAndMatchReply(f, (_) => true); }
 
 		private void _read()
 		{	// threaded recieve listener
