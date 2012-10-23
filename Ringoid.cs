@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Algebra.Extensions;
+using System.Linq;
 
 namespace Algebra
 {
@@ -20,24 +21,28 @@ namespace Algebra
 			Addition = new Magma<T>(el, add);
 			Multiplication = new Magma<T>(el, multiply);
 		}
+	}
 
-		/// <summary>Multiplication is distributive over addition</summary>
-		public bool Distributive
+	internal static class RingoidExtensions
+	{
+		public static bool Distributive<T>(this Ringoid<T> _) where T : IEquatable<T>
 		{
-			get
-			{
-				foreach (T a in Elements)
-					foreach (T b in Elements)
-						foreach (T c in Elements)
-							if (!Multiply.Distributes(Add, a, b, c))
-								return false;
-				return true;
-			}
+			return _.Elements.All(a => _.Elements.All(b => _.Elements.All(c => _.Multiply.Distributes(_.Add, a, b, c))));
 		}
 
-		public T Unit { get { return Multiplication.Identity; } }
-		public T Zero { get { return Multiplication.Absorber; } }
+		public static T Unit<T>(this Ringoid<T> _) where T : IEquatable<T>
+		{
+			return _.Multiplication.Identity();
+		}
 
-		public bool Shell { get { return Zero.Equals(Addition.Identity) && Unit.Equals(Unit); } }
+		public static T Zero<T>(this Ringoid<T> _) where T : IEquatable<T>
+		{
+			return _.Multiplication.Zero();
+		}
+
+		public static bool Shell<T>(this Ringoid<T> _) where T : IEquatable<T>
+		{
+			return _.Zero().Equals(_.Addition.Identity()) && _.Unit().Equals(_.Unit());
+		}
 	}
 }

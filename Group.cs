@@ -9,25 +9,26 @@ namespace Algebra
 	{
 		private Magma<T> _;
 		public Func<T, T, T> Operation { get { return _.Operation; } }
-		public T Identity { get { return _.Identity; } }
 
 		public Group(ISet<T> els, Func<T, T, T> op) : this(new Magma<T>(els, op)) { }
 
 		internal Group(Magma<T> m)
 		{
 			_ = m;
-			if (!_.Closed)
+			if (!_.Closed())
 				throw new ArgumentException("Operation not closed over set");
-			if (!_.Associative)
+			if (!_.Associative())
 				throw new ArgumentException("Operation not associative");
 			var x = Identity; // throw if there is no identity element
 			foreach (T t in _.Items)	// throw if there is an elemnt without an inverse
-				x = _.Inverse(t);
+				x = Inverse(t);
 		}
 
-		public bool Abelian { get { return _.Commutative; } }
+		public T Identity { get { return _.Identity(); } }
 
-		public T Inverse(T a) { return _.Inverse(a); }
+		public bool Abelian { get { return _.Commutative(); } }
+
+		public T Inverse(T a) { return _.Inverse(a,_.Identity()); }
 
 		#region ISet<T> interface exposes _.Items
 		public bool Add(T item) { return _.Items.Add(item); }

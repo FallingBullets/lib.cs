@@ -4,6 +4,60 @@ using System.Linq;
 
 namespace Algebra.Extensions
 {
+	/// <summary>Properties of Sets and functions over sets</summary>
+	public static class SetExtensions
+	{
+		#region Set logic
+		/// <summary>Generates the intersection of the passed sets</summary>
+		public static ISet<T> Intersection<T>(params ISet<T>[] sets)
+		{
+			var intersection = new SortedSet<T>(sets[0]);
+			foreach (ISet<T> set in sets)
+				intersection.IntersectWith(set);
+			return intersection;
+		}
+
+		/// <summary>Generates the union of the passed sets</summary>
+		public static ISet<T> Union<T>(params ISet<T>[] sets)
+		{
+			var union = new SortedSet<T>(sets[0]);
+			foreach (ISet<T> set in sets)
+				union.UnionWith(set);
+			return union;
+		}
+
+		/// <summary>The passed sets partition this set</summary>
+		public static bool Partitions<T>(this ISet<T> _, params ISet<T>[] sets)
+		{
+			return _.SetEquals(Union(sets))
+				&& sets.All(a => sets.All(b => a.SetEquals(b) ? true : Intersection(a, b).Count == 0));
+		}
+		#endregion
+
+		#region comparer
+		public class Comparer<T> : IComparer<ISet<T>>
+		{
+			public int Compare(ISet<T> x, ISet<T> y)
+			{
+				return x.SetEquals(y) ? 0 : Union(x,y).Count;
+			}
+		}
+		#endregion
+
+		#region generators
+		/// <summary>Lazy set generation</summary>
+		public static ISet<T> Set<T>(params T[] items) { return new SortedSet<T>(items); }
+
+		/// <summary>Generates the powerset</summary>
+		public static ISet<ISet<T>> Powerset<T>(this ISet<T> _)
+		{
+			var s = new SortedSet<ISet<T>>(new Comparer<T>());
+			((IEnumerable<T>)_).Powerset().All(item => s.Add(new SortedSet<T>(item)));
+			return s;
+		}
+		#endregion
+	}
+
 	/// <summary>Properties of binary operations</summary>
 	public static class OperationExtensions
 	{
@@ -185,56 +239,34 @@ namespace Algebra.Extensions
 		#endregion
 	}
 
-	/// <summary>Properties of Sets and functions over sets</summary>
-	public static class SetExtensions
+	public static class EnumerableExtensions
 	{
-		#region Set logic
-		/// <summary>Generates the intersection of the passed sets</summary>
-		public static ISet<T> Intersection<T>(params ISet<T>[] sets)
+		/// <summary>Generates an ntuple</summary>
+		public static IEnumerable<T[]> TuplesOf<T>(this IEnumerable<T> _, int length)
 		{
-			var intersection = new SortedSet<T>(sets[0]);
-			foreach(ISet<T> set in sets)
-				intersection.IntersectWith(set);
-			return intersection;
+			if (length < 1) throw new ArgumentException("Tuples have length greater than 1");
+			foreach (var item in _)
+			{
+				if (length == 1)
+					yield return new T[1] { item };
+				else
+				{
+					foreach (var list in _.TuplesOf(length - 1))
+					{
+						var l = new List<T>(list);
+						l.Add(item);
+						yield return l.ToArray();
+					}
+				}
+			}
 		}
-
-		/// <summary>Generates the union of the passed sets</summary>
-		public static ISet<T> Union<T>(params ISet<T>[] sets)
-		{
-			var union = new SortedSet<T>(sets[0]);
-			foreach(ISet<T> set in sets)
-				union.UnionWith(set);
-			return union;
-		}
-
-		/// <summary>The passed sets partition this set</summary>
-		public static bool Partitions<T>(this ISet<T> _, params ISet<T>[] sets)
-		{
-			return _.SetEquals(Union(sets))
-				&& sets.All(a => sets.All(b => a.SetEquals(b) ? true : Intersection(a,b).Count == 0));
-		}
-		#endregion
-
-		#region generators
-		/// <summary>Lazy set generation</summary>
-		private static ISet<T> Set<T>(params T[] items){ return new SortedSet<T>(items); }
 
 		/// <summary>Generates the powerset</summary>
-		public static ISet<ISet<T>> Powerset<T>(this ISet<T> _)
+		/// <remarks>From Rosetta Code</remarks>
+		public static IEnumerable<IEnumerable<T>> Powerset<T>(this IEnumerable<T> _)
 		{
-			var power = new SortedSet<ISet<T>>();
-			_.All(item => power.Add(Set(item)));
-
-			for(int i = 1; i < _.Count; i++)
-			{
-				_.All(item => power.All(delegate(ISet<T> set){
-					var x = new SortedSet<T>(set);
-					x.Add(item);
-					return power.Add(x);
-				}));
-			}
-			return power;
+			var seed = new List<IEnumerable<T>>() { Enumerable.Empty<T>() } as IEnumerable<IEnumerable<T>>;
+			return _.Aggregate(seed, (a, b) => a.Concat(a.Select(x => x.Concat(new List<T>() { b }))));
 		}
-		#endregion
 	}
 }
