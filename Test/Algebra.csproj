@@ -46,6 +46,7 @@
     <Compile Include="..\Action.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="..\IAlgebra.cs" />
+    <Compile Include="..\Permutations.cs" />
     <Compile Include="..\Extensions.cs" />
     <Compile Include="..\Group.cs" />
     <Compile Include="..\Magma.cs" />
