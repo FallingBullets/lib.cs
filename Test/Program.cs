@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using Algebra.Extensions;
+using Algebra.Permutations;
 
 namespace Algebra
 {
@@ -11,10 +11,30 @@ namespace Algebra
 	{
 		static void Main(string[] args)
 		{
-			var set = SetExtensions.Set<int>(1, 2, 3);
-			var power = set.Powerset();
-			foreach (var tuple in set.TuplesOf(5))
-				Console.WriteLine("[" + String.Join(",", tuple) + "]");
+			Permutation p;
+
+			Console.WriteLine("(1 10 3)(4 5 6)");
+			p = Permutation.Parse("(1 10 3)(4 5 6)");
+			Console.WriteLine(p);
+			Console.WriteLine(p.Equals(Permutation.Parse("(1 3)(1 10)(4 6)(4 5)(2 3)(2 3)")));
+			Console.WriteLine(string.Join("", p.Transpositions()));
+			Console.WriteLine(p.Equals(p));
+
+			Console.WriteLine("(3 7 10)(4 5 6)");
+			p = Permutation.Parse("(1 10 3)(4 5 6)(7 1 3)");
+			Console.WriteLine(p);
+
+			Console.WriteLine("(1 5 6 2 10 3)");
+			p = Permutation.Parse("(1 10 3)(4 5 6)(1 4 6 2)");
+			Console.WriteLine(p);
+
+			Console.WriteLine("(1 10 3)(4 5 6)");
+			p = Permutation.Parse("(1 10 3)(4 5 6)");
+			Console.WriteLine(p);
+			Console.WriteLine(p.Equals(p.Transpositions()));
+			Console.WriteLine(string.Join("", p.Transpositions()));
+
+			while (true) ;
 		}
 	}
 }
