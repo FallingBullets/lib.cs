@@ -11,55 +11,15 @@ namespace Algebra.Permutations
 		T Permute(T e);
 		/// <summary>The elements this permutation acts upon</summary>
 		ISet<T> Orbit { get; }
+		/// <summary>Return the permutation such that this*this.Inverse() == 1</summary>
+		IPermutable<T> Inverse();
+		/// <summary>Returns a list of transpositions which make up this permutation</summary>
+		IList<IPermutable<T>> Transpositions();
 	}
 
-	public struct Cycle : IPermutable<uint>, IEquatable<IPermutable<uint>>
+	public struct Cycle : IPermutable<uint>
 	{
-		private readonly IList<uint> _;
-
-		/// <summary>The elements this cycle acts upon</summary>
-		public ISet<uint> Orbit { get; private set; }
-		/// <summary>The number of elements in the orbit</summary>
-		public int Length { get { return _.Count; } }
-
-		/// <summary>The order of the smallest symetrical group which fits this permutation</summary>
-		internal uint Order { get { return _.Max(); } }
-
-		/// <summary>This cycle permutes every element to itsself</summary>
-		public bool Identity { get { return Orbit.Count == 1; } }
-		/// <summary>This cycle permutes 2 elements between each other</summary>
-		public bool Transposition { get { return Orbit.Count == 2; } }
-
-		/// <summary>Create a cycle using the sequenc of elements passed</summary>
-		public Cycle(params uint[] elements) : this()
-		{
-			_ = new List<uint>(elements);
-			Orbit = new HashSet<uint>(_);
-			if (!Orbit.SetEquals(_))
-				throw new ArgumentException("not a cycle: parameters not distinct from each other");
-			// order so minimum is at start
-		}
-
-		/// <summary>Map an element to its new value</summary>
-		public uint Permute(uint e)
-		{
-			int i = _.IndexOf(e);
-			if (i > -1)
-				return _[(i + 1) % Length];
-			return e;
-		}
-
-		/// <summary>Map every element of an array</summary>
-		internal void PermuteMap(ref uint[] map)
-		{
-			for (int i = 0; i < map.Length; i++)
-				map[i] = Permute(map[i]);
-		}
-
-		public bool Equals(IPermutable<uint> cy) { return Permutation.Equal(this, cy); }
-
-		public override string ToString() { return "(" + string.Join(" ", Ordered()._) + ")"; }
-
+		#region static
 		/// <summary>Parses cycle-notation</summary>
 		public static Cycle Parse(string s)
 		{
@@ -77,6 +37,70 @@ namespace Algebra.Permutations
 			return new Cycle(y);
 		}
 
+		#endregion
+
+		#region state and constructors
+		private readonly IList<uint> _;
+
+		/// <summary>Create a cycle using the sequenc of elements passed</summary>
+		public Cycle(params uint[] elements)
+			: this()
+		{
+			_ = new List<uint>(elements);
+			Orbit = new HashSet<uint>(_);
+			if (!Orbit.SetEquals(_))
+				throw new ArgumentException("not a cycle: parameters not distinct from each other");
+			// order so minimum is at start
+		}
+		#endregion
+
+		#region IPermutable<uint> and ToString
+		/// <summary>Map an element to its new value</summary>
+		public uint Permute(uint e)
+		{
+			int i = _.IndexOf(e);
+			if (i > -1)
+				return _[(i + 1) % Length];
+			return e;
+		}
+
+		public ISet<uint> Orbit { get; private set; }
+
+		public IPermutable<uint> Inverse() { return _inverse(); }
+
+		/// <summary>Get a set of transpositions that make this cycle</summary>
+		public IList<IPermutable<uint>> Transpositions()
+		{
+			if (Identity)
+				return null;
+			var cy = Ordered();
+			var trs = new List<IPermutable<uint>>();
+			for (int i = Length - 1; i > 0; i--)
+				trs.Add(new Cycle(cy._[0], cy._[i]));
+			return trs;
+		}
+
+		public bool Equals(IPermutable<uint> cy) { return Permutation.Equal(this, cy); }
+
+		public override string ToString() { return "(" + string.Join(" ", Ordered()._) + ")"; }
+		#endregion
+
+		/// <summary>The number of elements in the orbit</summary>
+		public int Length { get { return _.Count; } }
+		/// <summary>This cycle permutes every element to itsself</summary>
+		public bool Identity { get { return Orbit.Count == 1; } }
+		/// <summary>This cycle permutes 2 elements between each other</summary>
+		public bool Transposition { get { return Orbit.Count == 2; } }
+
+		internal Cycle _inverse() { return new Cycle(_.Reverse().ToArray()).Ordered(); }
+
+		/// <summary>Map every element of an array</summary>
+		internal void PermuteMap(ref uint[] map)
+		{
+			for (int i = 0; i < map.Length; i++)
+				map[i] = Permute(map[i]);
+		}
+
 		/// <summary>Reorder this cycle so the smallest element is first</summary>
 		public Cycle Ordered()
 		{
@@ -86,23 +110,13 @@ namespace Algebra.Permutations
 				els[i] = Permute(els[i - 1]);
 			return new Cycle(els);
 		}
-
-		/// <summary>Get a set of transpositions that make this cycle</summary>
-		public ISet<Cycle> Transpositions()
-		{
-			if (Identity)
-				return null;
-			var cy = Ordered();
-			var trs = new HashSet<Cycle>();
-			for (int i = Length - 1; i > 0; i--)
-				trs.Add(new Cycle(cy._[0], cy._[i]));
-			return trs;
-		}
 	}
 
-	public struct Permutation : IPermutable<uint>, IEquatable<IPermutable<uint>>, IEquatable<ISet<Cycle>>
+	public struct Permutation : IPermutable<uint>, IEquatable<ICollection<IPermutable<uint>>>
 	{
 		#region static
+		public static readonly IPermutable<uint> Identity = new Cycle();
+
 		private static bool _equal(IPermutable<uint> p1, IPermutable<uint> p2)
 		{
 			var orbits = p1.Orbit.Union(p2.Orbit);
@@ -139,41 +153,77 @@ namespace Algebra.Permutations
 			foreach (Match m in re.Matches(cycles))
 				_cys.Add(Cycle.Parse(m.Value));
 
-			uint max = 0;
-			foreach (var cy in _cys)
-				if (max + 1 < cy.Order)
-					max = cy.Order + 1;
-
-			var p = new Permutation(max);
+			var p = new Permutation(_cys.Max(cy => cy.Orbit.Max()) + 1);
+				
 			// permute elements of p by each cycle
-			for (int i = _cys.Count; i > 0; i--)
-				_cys[i - 1].PermuteMap(ref p._map);
-			// shrink map down to minimal length
-			int j = p._map.Length - 1;
-			do
-			{
-				if (p._map[j] != j)
-					break;
-				j--;
-			} while (j > 0);
-			Array.Resize(ref p._map, j + 1);
+			_cys.Reverse<Cycle>().All(cy => { cy.PermuteMap(ref p._map); return true; });
+
 			return p;
 		}
 		#endregion
 
-		#region
+		#region state and constructors
 		private uint[] _map;
 
-		public ISet<uint> Orbit { get { return new HashSet<uint>(_map); } }
-
 		/// <summary>Identity permutation of given size</summary>
-		Permutation(uint size)
+		public Permutation(uint size)
 		{
 			_map = new uint[size];
 			for (uint i = 0; i < size; i++)
 				_map[i] = i;
 		}
+
+		public Permutation(IPermutable<uint> perm)
+			: this(perm.Orbit.Max() + 1)
+		{
+			for (uint i = 0; i < _map.Length; i++)
+				_map[i] = perm.Permute(i);
+		}
 		#endregion
+
+		#region IPermutable<uint> IEquatable<ICollection<IPermutable<uint>>> and ToString
+		public uint Permute(uint e)
+		{
+			if (e > _map.Length)
+				return e;
+			return _map[e];
+		}
+
+		public ISet<uint> Orbit { get { return new HashSet<uint>(_map); } }
+
+		public IPermutable<uint> Inverse()
+		{
+			var p = new Permutation((uint)_map.Length);
+			Cycles().All(cy => { cy._inverse().PermuteMap(ref p._map); return true; });
+			return p;
+		}
+
+		public IList<IPermutable<uint>> Transpositions()
+		{
+			var cys = new List<IPermutable<uint>>();
+			Cycles().All(cy => { cys.AddRange(cy.Transpositions()); return true; });
+			return cys;
+		}
+
+		public bool Equals(IPermutable<uint> perm) { return Permutation.Equal(this, perm); }
+		public bool Equals(ICollection<IPermutable<uint>> perms) { return Equals(Parse(string.Join("", perms))); }
+
+		public override string ToString() { return string.Join("", Cycles()); }
+		#endregion
+
+		/// <summary>Shrink the orbit so the largest element is permuted</summary>
+		public void Trim()
+		{
+			// shrink map down to minimal length
+			int j = _map.Length - 1;
+			do
+			{
+				if (_map[j] != j)
+					break;
+				j--;
+			} while (j > 0);
+			Array.Resize(ref _map, j + 1);
+		}
 
 		public ISet<Cycle> Cycles()
 		{
@@ -197,26 +247,6 @@ namespace Algebra.Permutations
 				cyl.Clear();
 			}
 			return new HashSet<Cycle>(cys);
-		}
-
-		public uint Permute(uint e)
-		{
-			if (e > _map.Length)
-				return e;
-			return _map[e];
-		}
-
-		public bool Equals(IPermutable<uint> cy) { return Permutation.Equal(this, cy); }
-		public bool Equals(ISet<Cycle> cys) { return Equals(Parse(string.Join("", cys))); }
-
-		public override string ToString() { return string.Join("", Cycles()); }
-
-		public ISet<Cycle> Transpositions()
-		{
-			var cys = new HashSet<Cycle>();
-			foreach (var cy in Cycles())
-				cys.UnionWith(cy.Transpositions());
-			return cys;
 		}
 	}
 }
