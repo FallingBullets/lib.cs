@@ -52,6 +52,7 @@ namespace Algebra.Permutations
 				throw new ArgumentException("not a cycle: parameters not distinct from each other");
 			// order so minimum is at start
 		}
+		internal Cycle(IEnumerable<uint> elements) : this(elements.ToArray()) { }
 		#endregion
 
 		#region IPermutable<uint> and ToString
@@ -92,7 +93,7 @@ namespace Algebra.Permutations
 		/// <summary>This cycle permutes 2 elements between each other</summary>
 		public bool Transposition { get { return Orbit.Count == 2; } }
 
-		internal Cycle _inverse() { return new Cycle(_.Reverse().ToArray()).Ordered(); }
+		internal Cycle _inverse() { return new Cycle(_.Reverse()).Ordered(); }
 
 		/// <summary>Map every element of an array</summary>
 		internal void PermuteMap(ref uint[] map)
@@ -112,7 +113,7 @@ namespace Algebra.Permutations
 		}
 	}
 
-	public struct Permutation : IPermutable<uint>, IEquatable<ICollection<IPermutable<uint>>>
+	public struct Permutation : IPermutable<uint>, IEquatable<IEnumerable<IPermutable<uint>>>
 	{
 		#region static
 		public static readonly IPermutable<uint> Identity = new Cycle();
@@ -181,7 +182,7 @@ namespace Algebra.Permutations
 		}
 		#endregion
 
-		#region IPermutable<uint> IEquatable<ICollection<IPermutable<uint>>> and ToString
+		#region IPermutable<uint> IEquatable<IEnmerable<IPermutable<uint>>> and ToString
 		public uint Permute(uint e)
 		{
 			if (e > _map.Length)
@@ -206,7 +207,7 @@ namespace Algebra.Permutations
 		}
 
 		public bool Equals(IPermutable<uint> perm) { return Permutation.Equal(this, perm); }
-		public bool Equals(ICollection<IPermutable<uint>> perms) { return Equals(Parse(string.Join("", perms))); }
+		public bool Equals(IEnumerable<IPermutable<uint>> perms) { return Equals(Parse(string.Join("", perms))); }
 
 		public override string ToString() { return string.Join("", Cycles()); }
 		#endregion
