@@ -149,17 +149,12 @@ namespace Algebra.Permutations
 		public static Permutation Parse(string cycles)
 		{
 			var re = new Regex(@"\([0-9 ]+?\)");
-			var _cys = new List<Cycle>();
+			var _cys = new List<IPermutable<uint>>();
 
 			foreach (Match m in re.Matches(cycles))
 				_cys.Add(Cycle.Parse(m.Value));
 
-			var p = new Permutation(_cys.Max(cy => cy.Orbit.Max()) + 1);
-				
-			// permute elements of p by each cycle
-			_cys.Reverse<Cycle>().All(cy => { cy.PermuteMap(ref p._map); return true; });
-
-			return p;
+			return new Permutation(_cys);
 		}
 		#endregion
 
@@ -180,6 +175,20 @@ namespace Algebra.Permutations
 			for (uint i = 0; i < _map.Length; i++)
 				_map[i] = perm.Permute(i);
 		}
+
+		/// <summary>Merge a number of permutations</summary>
+		public Permutation(IEnumerable<IPermutable<uint>> perms)
+			: this(perms.Max(perm => perm.Orbit.Max()) + 1)
+		{
+			var cycles = new List<Cycle>();
+			foreach (var p in perms.Reverse())
+				cycles.AddRange(new Permutation(p).Cycles());
+			foreach (var cy in cycles)
+				cy.PermuteMap(ref _map);
+		}
+
+		/// <summary>Merge the passed permutaitons together</summary>
+		public Permutation(params IPermutable<uint>[] perms) : this((IEnumerable<IPermutable<uint>>)perms) { }
 		#endregion
 
 		#region IPermutable<uint> IEquatable<IEnmerable<IPermutable<uint>>> and ToString
@@ -226,6 +235,7 @@ namespace Algebra.Permutations
 			Array.Resize(ref _map, j + 1);
 		}
 
+		/// <summary>Convert a permutation into cycle notation</summary>
 		public ISet<Cycle> Cycles()
 		{
 			var cys = new List<Cycle>();

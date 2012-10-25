@@ -41,6 +41,10 @@ namespace Algebra
 			Console.WriteLine(p);
 			p = new Permutation(Permutation.Parse("(1 2 3)(4 2 5)"));
 			Console.WriteLine(p);
+			p = new Permutation(Cycle.Parse("(1 2 3)"), Cycle.Parse("(4 2 5)"), Permutation.Parse("(2 1)(1 2)"));
+			Console.WriteLine(p);
+			p = new Permutation(Cycle.Parse("(1 2 3)"), Cycle.Parse("(4 2 5)"), Permutation.Parse("(2 1)(1 2)"));
+			Console.WriteLine(p);
 
 			while (true) ;
 		}
