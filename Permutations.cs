@@ -17,6 +17,7 @@ namespace Algebra.Permutations
 		IList<IPermutable<T>> Transpositions();
 	}
 
+	#region base classes
 	public struct Cycle : IPermutable<uint>
 	{
 		#region static
@@ -103,7 +104,7 @@ namespace Algebra.Permutations
 		}
 
 		/// <summary>Reorder this cycle so the smallest element is first</summary>
-		public Cycle Ordered()
+		internal Cycle Ordered()
 		{
 			var els = new uint[Length];
 			els[0] = _.Min();
@@ -116,7 +117,7 @@ namespace Algebra.Permutations
 	public struct Permutation : IPermutable<uint>, IEquatable<IEnumerable<IPermutable<uint>>>
 	{
 		#region static
-		public static readonly IPermutable<uint> Identity = new Cycle();
+		public static readonly IPermutable<uint> Identity = new Permutation(1);
 
 		private static bool _equal(IPermutable<uint> p1, IPermutable<uint> p2)
 		{
@@ -131,12 +132,11 @@ namespace Algebra.Permutations
 		{
 			switch (perms.Length)
 			{
+				case 0:
 				case 1:
 					return true;
 				case 2:
 					return _equal(perms[0], perms[1]);
-				case 0:
-					return false;
 				default:
 					for (int i = 1; i < perms.Length; i++)
 						if (!_equal(perms[0], perms[i]))
@@ -178,7 +178,7 @@ namespace Algebra.Permutations
 
 		/// <summary>Merge a number of permutations</summary>
 		public Permutation(IEnumerable<IPermutable<uint>> perms)
-			: this(perms.Max(perm => perm.Orbit.Max()) + 1)
+			: this(perms.DefaultIfEmpty(Identity).Max(perm => perm.Orbit.Max()) + 1)
 		{
 			var cycles = new List<Cycle>();
 			foreach (var p in perms.Reverse())
@@ -194,9 +194,9 @@ namespace Algebra.Permutations
 		#region IPermutable<uint> IEquatable<IEnmerable<IPermutable<uint>>> and ToString
 		public uint Permute(uint e)
 		{
-			if (e > _map.Length)
-				return e;
-			return _map[e];
+			if (e < _map.Length)
+				return _map[e];
+			return e;
 		}
 
 		public ISet<uint> Orbit { get { return new HashSet<uint>(_map); } }
@@ -224,15 +224,13 @@ namespace Algebra.Permutations
 		/// <summary>Shrink the orbit so the largest element is permuted</summary>
 		public void Trim()
 		{
-			// shrink map down to minimal length
-			int j = _map.Length - 1;
-			do
-			{
-				if (_map[j] != j)
-					break;
-				j--;
-			} while (j > 0);
-			Array.Resize(ref _map, j + 1);
+			uint last = 0;
+			for (uint i = 0; i < _map.Length; i++)
+			{	// retreive index of last permuting element
+				if (_map[i] != i)
+					last = i;
+			}
+			Array.Resize(ref _map, (int)(last + 1));
 		}
 
 		/// <summary>Convert a permutation into cycle notation</summary>
@@ -260,4 +258,5 @@ namespace Algebra.Permutations
 			return new HashSet<Cycle>(cys);
 		}
 	}
+	#endregion
 }
