@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Algebra.Permutations;
+using Algebra.Extensions;
 
 namespace Algebra
 {
@@ -45,6 +46,17 @@ namespace Algebra
 			Console.WriteLine(p);
 			p = new Permutation(Cycle.Parse("(1 2 3)"), Cycle.Parse("(4 2 5)"), Permutation.Parse("(2 1)(1 2)"));
 			Console.WriteLine(p);
+			p = Permutation.Parse("(1 10 3)(4 5 6)(1 10)");
+			Console.WriteLine(p);
+			Console.WriteLine(p.Orbit.Count);
+			p.Trim();
+			Console.WriteLine(p);
+			Console.WriteLine(p.Orbit.Count);
+
+			Console.WriteLine("Powersets");
+			uint n = 4;
+			foreach (var q in n.PermutationsOf())
+				Console.WriteLine(new Permutation(q));
 
 			while (true) ;
 		}
