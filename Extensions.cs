@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Algebra.Permutations;
 
 namespace Algebra.Extensions
 {
@@ -39,7 +40,7 @@ namespace Algebra.Extensions
 		{
 			public int Compare(ISet<T> x, ISet<T> y)
 			{
-				return x.SetEquals(y) ? 0 : Union(x,y).Count;
+				return x.SetEquals(y) ? 0 : Union(x, y).Count;
 			}
 		}
 		#endregion
@@ -265,8 +266,31 @@ namespace Algebra.Extensions
 		/// <remarks>From Rosetta Code</remarks>
 		public static IEnumerable<IEnumerable<T>> Powerset<T>(this IEnumerable<T> _)
 		{
-			var seed = new List<IEnumerable<T>>() { Enumerable.Empty<T>() } as IEnumerable<IEnumerable<T>>;
+			IEnumerable<IEnumerable<T>> seed = new List<IEnumerable<T>>() { Enumerable.Empty<T>() };
 			return _.Aggregate(seed, (a, b) => a.Concat(a.Select(x => x.Concat(new List<T>() { b }))));
+		}
+
+		public static ISet<IPermutable<uint>> PermutationsOf(this uint size)
+		{
+			var n = new Permutation(size);
+			var range = Powerset(n.Orbit);
+			var cys = new HashSet<IPermutable<uint>>();
+			foreach (var cy in range)
+			{
+				if (cy.Count() > 1)
+				{
+					cys.Add(new Cycle(cy));
+				}
+			}
+			var perms = new HashSet<IPermutable<uint>>();
+			foreach (var cy in Powerset(cys))
+			{
+				var p = new Permutation(cy);
+				if (p.Equals(Permutation.Identity) || perms.Any(q => p.Equals(q)))
+					continue;
+				perms.Add(p);
+			}
+			return perms;
 		}
 	}
 }
