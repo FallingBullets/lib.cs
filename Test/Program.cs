@@ -54,9 +54,10 @@ namespace Algebra
 			Console.WriteLine(p.Orbit.Count);
 
 			Console.WriteLine("Powersets");
-			uint n = 4;
-			foreach (var q in n.PermutationsOf())
+			foreach (var q in EnumerableExtensions.PermutationsOf(4))
 				Console.WriteLine(new Permutation(q));
+
+			var set = new HashSet<int> { 1, 2, 3 };
 
 			while (true) ;
 		}

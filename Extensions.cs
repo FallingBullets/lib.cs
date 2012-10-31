@@ -270,7 +270,7 @@ namespace Algebra.Extensions
 			return _.Aggregate(seed, (a, b) => a.Concat(a.Select(x => x.Concat(new List<T>() { b }))));
 		}
 
-		public static ISet<IPermutable<uint>> PermutationsOf(this uint size)
+		public static ISet<IPermutable<uint>> PermutationsOf(uint size)
 		{
 			var n = new Permutation(size);
 			var range = Powerset(n.Orbit);
