@@ -285,7 +285,9 @@ namespace Algebra.Extensions
 			var perms = new HashSet<IPermutable<uint>>();
 			foreach (var cy in Powerset(cys))
 			{
-				var p = new Permutation(cy);
+				var p = default(Permutation);
+				foreach (var q in cy)
+					p.Add(q);
 				if (p.Equals(Permutation.Identity) || perms.Any(q => p.Equals(q)))
 					continue;
 				perms.Add(p);
