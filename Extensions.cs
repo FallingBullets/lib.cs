@@ -272,8 +272,10 @@ namespace Algebra.Extensions
 
 		public static ISet<IPermutable<uint>> PermutationsOf(uint size)
 		{
-			var n = new Permutation(size);
-			var range = Powerset(n.Orbit);
+			var n = new uint[size];
+			for (uint i = 0; i < size; i++)
+				n[i] = i;
+			var range = Powerset(n);
 			var cys = new HashSet<IPermutable<uint>>();
 			foreach (var cy in range)
 			{

@@ -9,7 +9,8 @@ namespace Algebra
 		static void Main(string[] args)
 		{
 			TestBasePerms();
-			//TestPermPowersets();
+			TestPermExtensions();
+			TestBasePermPowersets();
 			while (true) ;
 		}
 		static void TestBasePerms()
@@ -76,11 +77,28 @@ namespace Algebra
 			Console.WriteLine("0: " + p);
 			Console.WriteLine("=? " + p.Equals(Permutation.Identity));
 		}
-		static void TestPermPowersets()
+		static void TestBasePermPowersets()
 		{
 			Console.WriteLine("Powersets");
 			foreach (var p in EnumerableExtensions.PermutationsOf(4))
 				Console.WriteLine(new Permutation { p });
+		}
+		static void TestGenericPerms()
+		{
+		}
+		static void TestPermExtensions()
+		{
+			Action<IPermutable<uint>> test = p =>
+			{
+				Console.WriteLine(p);
+				Console.WriteLine(p.IsIdentity());
+				Console.WriteLine(p.IsTransposition());
+				Console.WriteLine(p.IsCycle());
+			};
+			test(new Permutation(1));
+			test(new Cycle(1, 2));
+			test(new Permutation { "(1 2 3)" });
+			test(Permutation.Parse("(1 2 3)(4 5 6)"));
 		}
 	}
 }

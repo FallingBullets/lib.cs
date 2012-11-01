@@ -18,6 +18,22 @@ namespace Algebra.Permutations
 		IList<IPermutable<T>> Transpositions();
 	}
 
+	public static class PermutationExtensions
+	{
+		public static bool IsIdentity<T>(this IPermutable<T> _) { return _.Orbit.Count == 1; }
+		public static bool IsTransposition<T>(this IPermutable<T> _) { return _.Orbit.Count == 2; }
+
+		public static bool IsCycle<T>(this IPermutable<T> _)
+		{
+			var o = new HashSet<T>(_.Orbit);
+			if (o.Count == 0)
+				return false;
+			T e0 = o.Min(), e1 = e0; int i = 0;
+			do { e1 = _.Permute(e1); i++; } while (!e1.Equals(e0));
+			return o.Count == i;
+		}
+	}
+
 	#region IPermutable<uint>
 	public struct Cycle : IPermutable<uint>
 	{
@@ -62,7 +78,7 @@ namespace Algebra.Permutations
 		{
 			int i = _.IndexOf(e);
 			if (i > -1)
-				return _[(i + 1) % Length];
+				return _[(i + 1) % Orbit.Count];
 			return e;
 		}
 
@@ -73,11 +89,11 @@ namespace Algebra.Permutations
 		/// <summary>Get a set of transpositions that make this cycle</summary>
 		public IList<IPermutable<uint>> Transpositions()
 		{
-			if (Identity)
+			if (Orbit.Count < 2)
 				return null;
 			var cy = _ordered();
 			var trs = new List<IPermutable<uint>>();
-			for (int i = Length - 1; i > 0; i--)
+			for (int i = Orbit.Count - 1; i > 0; i--)
 				trs.Add(new Cycle(cy._[0], cy._[i]));
 			return trs;
 		}
@@ -89,21 +105,14 @@ namespace Algebra.Permutations
 		public override string ToString() { return "(" + string.Join(" ", _ordered()._) + ")"; }
 		#endregion
 
-		/// <summary>The number of elements in the orbit</summary>
-		internal int Length { get { return _.Count; } }
-		/// <summary>This cycle permutes every element to itsself</summary>
-		internal bool Identity { get { return Orbit.Count == 1; } }
-		/// <summary>This cycle permutes 2 elements between each other</summary>
-		internal bool Transposition { get { return Orbit.Count == 2; } }
-
 		internal Cycle _inverse() { return new Cycle(_.Reverse())._ordered(); }
 
 		/// <summary>Reorder this cycle so the smallest element is first</summary>
 		internal Cycle _ordered()
 		{
-			var els = new uint[Length];
+			var els = new uint[Orbit.Count];
 			els[0] = _.Min();
-			for (int i = 1; i < Length; i++)
+			for (int i = 1; i < Orbit.Count; i++)
 				els[i] = Permute(els[i - 1]);
 			return new Cycle(els);
 		}
@@ -173,7 +182,7 @@ namespace Algebra.Permutations
 			return e;
 		}
 
-		public ISet<uint> Orbit { get { _init(); _resize(); return new HashSet<uint>(_map); } }
+		public ISet<uint> Orbit { get { _init(); _resize(); return _order(); } }
 
 		public IPermutable<uint> Inverse()
 		{
@@ -199,11 +208,13 @@ namespace Algebra.Permutations
 		#region IEnumerable + Add
 		public IEnumerator GetEnumerator() { throw new NotImplementedException(); }
 
-		public void Add(IPermutable<uint> cy)
+		public void Add(IPermutable<uint> perm)
 		{
-			_resize(cy.Orbit.Max() + 1);
+			if (perm.Orbit.Count == 0)
+				return;
+			_resize(perm.Orbit.Max() + 1);
 			for (int i = 0; i < _map.Length; i++)
-				_map[i] = cy.Permute(_map[i]);
+				_map[i] = perm.Permute(_map[i]);
 		}
 
 		public void Add(string cy) { Add(Cycle.Parse(cy)); }
@@ -258,6 +269,15 @@ namespace Algebra.Permutations
 				cyl.Clear();
 			}
 			return new HashSet<Cycle>(cys);
+		}
+
+		internal ISet<uint> _order()
+		{
+			var els = new HashSet<uint>();
+			for (int i = 0; i < _map.Length; i++)
+				if (_map[i] != i)
+					els.Add(_map[i]);
+			return els;
 		}
 	}
 	#endregion
