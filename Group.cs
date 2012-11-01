@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Algebra.Extensions;
 
 namespace Algebra
 {
@@ -28,7 +27,7 @@ namespace Algebra
 
 		public bool Abelian { get { return _.Commutative(); } }
 
-		public T Inverse(T a) { return _.Inverse(a,_.Identity()); }
+		public T Inverse(T a) { return _.Inverse(a, _.Identity()); }
 
 		#region ISet<T> interface exposes _.Items
 		public bool Add(T item) { return _.Items.Add(item); }

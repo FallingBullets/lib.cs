@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Algebra
 {
-	public struct Action<G, X> where G : IEquatable<G> where X: IEquatable<X>
+	public struct Action<G, X>
+		where G : IEquatable<G>
+		where X : IEquatable<X>
 	{
 		public Func<G, X, X> Operation;
 		public IGroup<G> Group;

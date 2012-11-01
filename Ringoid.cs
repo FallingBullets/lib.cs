@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Algebra.Extensions;
 using System.Linq;
+using Algebra.Extensions;
 
 namespace Algebra
 {

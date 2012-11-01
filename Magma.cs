@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using Algebra.Extensions;
 using System.Linq;
+using Algebra.Extensions;
 
 namespace Algebra
 {
@@ -31,7 +31,7 @@ namespace Algebra
 		public IGroup<T> GenerateSubgroup(params T[] generators)
 		{
 			var _ = new Magma<T>(new SortedSet<T>(generators), Operation, true);
-			if(!IsOvergroupOf (_.Items))
+			if (!IsOvergroupOf(_.Items))
 				throw new ArgumentException("Not a subset");
 			return new Group<T>(_);
 		}
