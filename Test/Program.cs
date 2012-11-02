@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Algebra.Extensions;
 using Algebra.Permutations;
 
@@ -8,8 +9,7 @@ namespace Algebra
 	{
 		static void Main(string[] args)
 		{
-			TestBasePerms();
-			TestPermExtensions();
+			TestPerms();
 			TestBasePermPowersets();
 			while (true) ;
 		}
@@ -83,22 +83,39 @@ namespace Algebra
 			foreach (var p in EnumerableExtensions.PermutationsOf(4))
 				Console.WriteLine(new Permutation { p });
 		}
-		static void TestGenericPerms()
+
+		static void TestPerm<T>(IPermutable<T> p)
 		{
-		}
-		static void TestPermExtensions()
-		{
-			Action<IPermutable<uint>> test = p =>
+			// ToString
+			Console.WriteLine(": " + p);
+			// is identity?
+			Console.WriteLine("identity? " + p.IsIdentity());
+			// is transposition?
+			Console.WriteLine("transposition? " + p.IsTransposition());
+			// is cycle?
+			Console.WriteLine("cycle? " + p.IsCycle());
+			// number of cycles
+			if (p.CountCycles() > 1)
 			{
-				Console.WriteLine(p);
-				Console.WriteLine(p.IsIdentity());
-				Console.WriteLine(p.IsTransposition());
-				Console.WriteLine(p.IsCycle());
-			};
-			test(new Permutation(1));
-			test(new Cycle(1, 2));
-			test(new Permutation { "(1 2 3)" });
-			test(Permutation.Parse("(1 2 3)(4 5 6)"));
+				Console.WriteLine("cycles: " + p.CountCycles());
+				Console.WriteLine("\t" + string.Join(", ", p.Cycles().Select(cy => "(" + string.Join(" ", cy.Orbit) + ")")));
+			}
+			var q = p.Inverse();
+			Console.WriteLine("inverse: " + q);
+			Console.WriteLine("inverse-equals? " + q.Equals(p.Inverse()));
+			Console.WriteLine("inverse? "); // TODO: addable?
+			Console.WriteLine();
+		}
+
+		static void TestPerms()
+		{
+			TestPerm(new Permutation(1));
+			TestPerm(new Cycle<uint>(1, 2));
+			TestPerm(new Permutation { "(1 2 3)" });
+			TestPerm(new Permutation { "(1 2 3)", "(4 5 6)" });
+			TestPerm(Permutation.Parse("(1 2 3)(4 5 6)"));
+			TestPerm(new Cycle<byte>(1, 2, 3, 4, 5));
+			TestPerm(Cycle<bool>.Parse("(1 2 3)"));
 		}
 	}
 }

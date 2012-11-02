@@ -275,21 +275,13 @@ namespace Algebra.Extensions
 			var n = new uint[size];
 			for (uint i = 0; i < size; i++)
 				n[i] = i;
-			var range = Powerset(n);
 			var cys = new HashSet<IPermutable<uint>>();
-			foreach (var cy in range)
-			{
-				if (cy.Count() > 1)
-				{
-					cys.Add(new Cycle(cy));
-				}
-			}
+			Powerset(n).All(cy => { if (cy.Count() > 1) cys.Add(new Cycle<uint>(cy.ToArray())); return true; });
 			var perms = new HashSet<IPermutable<uint>>();
 			foreach (var cy in Powerset(cys))
 			{
 				var p = default(Permutation);
-				foreach (var q in cy)
-					p.Add(q);
+				cy.All(q => { p.Add(q); return true; });
 				if (p.Equals(Permutation.Identity) || perms.Any(q => p.Equals(q)))
 					continue;
 				perms.Add(p);
