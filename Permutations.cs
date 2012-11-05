@@ -18,9 +18,8 @@ namespace Algebra.Permutations
 		IList<IPermutable<T>> Transpositions();
 	}
 
-	public struct Cycle<T> : IPermutable<T>
+	public static class Cycle
 	{
-		#region static
 		/// <summary>Parses cycle-notation</summary>
 		public static Cycle<uint> Parse(string s)
 		{
@@ -37,8 +36,10 @@ namespace Algebra.Permutations
 			}
 			return new Cycle<uint>(y);
 		}
-		#endregion
+	}
 
+	public struct Cycle<T> : IPermutable<T>
+	{
 		#region state and constructors
 		private List<T> _;
 
@@ -79,11 +80,46 @@ namespace Algebra.Permutations
 			return trs;
 		}
 
-		public bool Equals(IPermutable<T> other) { return PermutationExtensions.Equal(this, other); }
+		public bool Equals(IPermutable<T> other) { return Permutations.Equals<T>(this, other); }
 		#endregion
 
 		#region ToString
 		public override string ToString() { return "(" + string.Join(" ", _) + ")"; }
+		#endregion
+	}
+
+	public struct Permutation<T> : IPermutable<T>
+	{
+		#region state and constructors
+		List<Cycle<T>> _cycles;
+		#endregion
+
+		#region IPermutable<T>
+		public T Permute(T e)
+		{
+			throw new NotImplementedException();
+		}
+
+		public ISet<T> Orbit
+		{
+			get { throw new NotImplementedException(); }
+		}
+
+		public IPermutable<T> Inverse()
+		{
+			throw new NotImplementedException();
+		}
+
+		public IList<IPermutable<T>> Transpositions()
+		{
+			throw new NotImplementedException();
+		}
+
+		public bool Equals(IPermutable<T> other) { return Permutations.Equals<T>(this, other); }
+		#endregion
+
+		#region ToString
+		public override string ToString() { return string.Join("", _cycles); }
 		#endregion
 	}
 
@@ -186,7 +222,7 @@ namespace Algebra.Permutations
 				_map[i] = perm.Permute(_map[i]);
 		}
 
-		public void Add(string cy) { Add(Cycle<uint>.Parse(cy)); }
+		public void Add(string cy) { Add(Cycle.Parse(cy)); }
 		#endregion
 
 		#region ToString
@@ -252,9 +288,9 @@ namespace Algebra.Permutations
 		#endregion
 	}
 
-	public static class PermutationExtensions
+	public static class Permutations
 	{
-		public static bool Equal<T>(IPermutable<T> p1, IPermutable<T> p2)
+		public static bool Equals<T>(IPermutable<T> p1, IPermutable<T> p2)
 		{
 			var orbits = p1.Orbit.Union(p2.Orbit);
 			foreach (T e in orbits)

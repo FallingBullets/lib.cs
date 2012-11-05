@@ -115,7 +115,7 @@ namespace Algebra
 			TestPerm(new Permutation { "(1 2 3)", "(4 5 6)" });
 			TestPerm(Permutation.Parse("(1 2 3)(4 5 6)"));
 			TestPerm(new Cycle<byte>(1, 2, 3, 4, 5));
-			TestPerm(Cycle<bool>.Parse("(1 2 3)"));
+			TestPerm(Cycle.Parse("(1 2 3)"));
 		}
 	}
 }
