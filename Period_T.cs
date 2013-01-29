@@ -7,9 +7,6 @@
  */
 namespace fbstj
 {
-	/// <summary>A binary opperation which takes two values and returns a third relative to the two argumaents</summary>
-	public delegate T Binary<T>(T a, T b) where T : IComparable<T>;
-
 	public struct Period<T>
 		where T : struct, IComparable<T>
 	{
@@ -18,15 +15,15 @@ namespace fbstj
 		private readonly T _0;
 
 		/// <summary>The subtraction operation of T</summary>
-		public readonly Binary<T> Subtract;
+		public readonly Func<T, T, T> Subtract;
 
 		/// <summary>The addition operation of T</summary>
-		public readonly Binary<T> Add;
+		public readonly Func<T, T, T> Add;
 
 		/// <summary>The periodic value</summary>
 		public readonly T Value;
 
-		public Period(T max, Binary<T> sub)
+		public Period(T max, Func<T, T, T> sub)
 		{
 			_0 = default(T);
 			if (max.CompareTo(_0) < 0)
