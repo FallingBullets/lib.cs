@@ -88,31 +88,39 @@ namespace Algebra.Permutations
 		#endregion
 	}
 
-	public struct Permutation<T> : IPermutable<T>
+	public class Permutation<T> : IPermutable<T>
 	{
 		#region state and constructors
-		List<Cycle<T>> _cycles;
+		List<Cycle<T>> _cycles = new List<Cycle<T>>();
 		#endregion
 
 		#region IPermutable<T>
 		public T Permute(T e)
 		{
-			throw new NotImplementedException();
+			if (Orbit.Contains(e))
+				_cycles.Reverse<Cycle<T>>().All(cy => { e = cy.Permute(e); return true; });
+			return e;
 		}
 
 		public ISet<T> Orbit
 		{
-			get { throw new NotImplementedException(); }
+			get { return new HashSet<T>(_cycles.SelectMany(cy => cy.Orbit)); }
 		}
 
 		public IPermutable<T> Inverse()
 		{
-			throw new NotImplementedException();
+			var p = new Permutation<T>();
+			_cycles.All(cy => { p._cycles.Add((Cycle<T>)cy.Inverse()); return true; });
+			return p;
 		}
 
 		public IList<IPermutable<T>> Transpositions()
 		{
-			throw new NotImplementedException();
+			if (Orbit.Count < 2)
+				return null;
+			var trs = new List<IPermutable<T>>();
+			_cycles.All(cy => { trs.AddRange(cy.Transpositions()); return true; });
+			return trs;
 		}
 
 		public bool Equals(IPermutable<T> other) { return Permutations.Equals<T>(this, other); }
@@ -292,14 +300,20 @@ namespace Algebra.Permutations
 	{
 		public static bool Equals<T>(IPermutable<T> p1, IPermutable<T> p2)
 		{
-			var orbits = p1.Orbit.Union(p2.Orbit);
-			foreach (T e in orbits)
-				if (p1.Permute(e).Equals(p2.Permute(e)))
-					return false;
-			return true;
+			return p1.Orbit.Union(p2.Orbit).All(e => p1.Permute(e).Equals(p2.Permute(e)));
 		}
 
-		public static bool IsIdentity<T>(this IPermutable<T> _) { return _.Orbit.Count == 1; }
+		private static bool Intersects<T>(this IEnumerable<T> _, IEnumerable<T> other)
+		{
+			return _.Any(i => other.Any(j => i.Equals(j)));
+		}
+
+		public static bool Intersects<T>(this IPermutable<T> _, IPermutable<T> other)
+		{
+			return _.Orbit.Intersects(other.Orbit);
+		}
+
+		public static bool IsIdentity<T>(this IPermutable<T> _) { return _.Orbit.Count < 2; }
 		public static bool IsTransposition<T>(this IPermutable<T> _) { return _.Orbit.Count == 2; }
 
 		public static ISet<IPermutable<T>> Cycles<T>(this IPermutable<T> _)
