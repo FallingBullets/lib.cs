@@ -87,29 +87,32 @@ namespace Algebra
 		static void TestPerm<T>(IPermutable<T> p)
 		{
 			// ToString
-			Console.WriteLine(": " + p);
-			// is identity?
-			Console.WriteLine("identity? " + p.IsIdentity());
-			// is transposition?
-			Console.WriteLine("transposition? " + p.IsTransposition());
-			// is cycle?
-			Console.WriteLine("cycle? " + p.IsCycle());
+			Console.Write(p);
+			Console.Write("\t");
+			// type
+			if (p.IsIdentity())
+				Console.Write("identity");
+			else if (p.IsTransposition())
+				Console.Write("transposition");
+			else if (p.IsCycle())
+				Console.Write("cycle");
+			else
+				Console.WriteLine("permutation");
 			// number of cycles
 			if (p.CountCycles() > 1)
 			{
-				Console.WriteLine("cycles: " + p.CountCycles());
-				Console.WriteLine("\t" + string.Join(", ", p.Cycles().Select(cy => "(" + string.Join(" ", cy.Orbit) + ")")));
+				Console.Write("\t" + p.CountCycles());
+				Console.Write(":" + string.Join(", ", p.Cycles().Select(cy => "(" + string.Join(" ", cy.Orbit) + ")")));
 			}
 			var q = p.Inverse();
-			Console.WriteLine("inverse: " + q);
-			Console.WriteLine("inverse-equals? " + q.Equals(p.Inverse()));
-			Console.WriteLine("inverse? "); // TODO: addable?
+			Console.Write("\t" + q);
 			Console.WriteLine();
 		}
 
 		static void TestPerms()
 		{
-			TestPerm(new Permutation(1));
+			Console.WriteLine("value\ttype\tcycle?\tcycles\tinverse");
+			TestPerm(new Permutation<int>());
 			TestPerm(new Cycle<uint>(1, 2));
 			TestPerm(new Permutation { "(1 2 3)" });
 			TestPerm(new Permutation { "(1 2 3)", "(4 5 6)" });
